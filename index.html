@@ -7,16 +7,16 @@
     <title>Rogert Ovalle - Data, IA & NoCode Product Management</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             line-height: 1.6;
             margin: 0;
             padding: 0;
-            background-color: #e3f2fd;
-            color: #212121;
+            background-color: #fff; /* Blanco */
+            color: #003249; /* Prussian Blue */
         }
         header {
-            background: #0d47a1;
-            color: #fff;
+            background: #ccdbdc; /* Platinum */
+            color: #003249; /* Prussian Blue */
             padding: 10px 0;
         }
         header nav {
@@ -26,13 +26,13 @@
             padding: 0 20px;
         }
         header nav a {
-            color: #bbdefb;
+            color: #003249; /* Prussian Blue */
             text-decoration: none;
             margin-left: 15px;
             font-weight: bold;
         }
         header nav a:hover {
-            color: #ffffff;
+            color: #007ea7; /* Cerulean */
         }
         .container {
             max-width: 1200px;
@@ -43,58 +43,42 @@
             margin-bottom: 40px;
         }
         section h2 {
-            color: #0d47a1;
+            color: #007ea7; /* Cerulean */
         }
-        .cta {
-            background: #0d47a1;
-            color: #fff;
+        .cta, .service {
+            background: #9ad1d4; /* Non Photo Blue */
+            color: #003249; /* Prussian Blue */
             text-align: center;
             padding: 20px;
             border-radius: 5px;
+            margin-top: 20px;
         }
-        .cta a {
-            color: #ffffff;
+        .cta a, .service a {
+            color: #fff;
             text-decoration: none;
             font-weight: bold;
             padding: 10px 20px;
-            background: #1976d2;
+            background: #003249; /* Prussian Blue */
             border-radius: 5px;
         }
-        .cta a:hover {
-            background: #0d47a1;
+        .cta a:hover, .service a:hover {
+            background: #007ea7; /* Cerulean */
         }
         footer {
+            background: #003249; /* Prussian Blue */
+            color: #fff;
             text-align: center;
             padding: 10px;
-            background: #212121;
-            color: #fff;
         }
-        form {
-            background: #fff;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            max-width: 600px;
-            margin: 0 auto;
+        footer a {
+            color: #bbd1d4; /* Light Non Photo Blue */
+            text-decoration: none;
         }
-        form input, form button {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        form button {
-            background: #0d47a1;
-            color: #fff;
-            border: none;
-            cursor: pointer;
-        }
-        form button:hover {
-            background: #1565c0;
+        footer a:hover {
+            color: #f5f8f8; /* Platinum */
         }
         .recommendations {
-            background: #f1f8e9;
+            background: #eaf1f1;
             padding: 20px;
             border-radius: 5px;
         }
@@ -102,8 +86,49 @@
             margin: 20px 0;
             padding: 10px 20px;
             background: #fff;
-            border-left: 5px solid #0d47a1;
+            border-left: 5px solid #ccdbdc;
             font-style: italic;
+        }
+        .service-box {
+            background: #ffffff;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            border: 1px solid #ddd; /* Borde sutil */
+        }
+        .service-box h3 {
+            color: #007ea7; /* Cerulean */
+        }
+        .service-box ul {
+            padding-left: 20px;
+        }
+        .service-box ul li {
+            margin: 10px 0;
+        }
+        .form-container {
+            background: #fff;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .form-container input, .form-container button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .form-container button {
+            background: #007ea7; /* Cerulean */
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        .form-container button:hover {
+            background: #003249; /* Prussian Blue */
         }
     </style>
 </head>
@@ -120,33 +145,9 @@
 
     <div class="container">
         <section>
-            <h2>¿Qué Ofrezco?</h2>
-            <h3>1. Capacitación Especializada</h3>
-            <p>Te enseño cómo combinar datos, inteligencia artificial y herramientas NoCode para liderar proyectos innovadores. Mis talleres son prácticos, ágiles y están diseñados para que puedas aplicar lo aprendido desde el primer día.</p>
-            <ul>
-                <li>Duración: 2-4 horas por sesión</li>
-                <li>Precio: Desde COP $2.5M por taller</li>
-            </ul>
-
-            <h3>2. Asesoría Integral</h3>
-            <p>Realizo un diagnóstico personalizado y te brindo recomendaciones específicas para optimizar tus proyectos en Data, IA o NoCode. Recibe orientación directa y práctica para resolver tus retos.</p>
-            <ul>
-                <li>Duración: Paquetes de 5-10 horas</li>
-                <li>Precio: Desde COP $3M por paquete</li>
-            </ul>
-
-            <h3>3. Facilitación de Talleres Estratégicos</h3>
-            <p>Te ayudo a organizar y liderar sesiones estratégicas para priorizar proyectos, validar hipótesis y desarrollar soluciones de manera ágil y eficiente.</p>
-            <ul>
-                <li>Duración: 2-6 horas por evento</li>
-                <li>Precio: Desde COP $3M por sesión</li>
-            </ul>
-        </section>
-
-        <section>
             <h2>Curso Gratuito: Principios de Producto, Data Management e Inteligencia Artificial</h2>
             <p>Recibe en tu correo los principales conceptos para conectar estrategia de producto, gestión de datos e inteligencia artificial. Aplica estas ideas para transformar tu negocio desde hoy.</p>
-            <form>
+            <form class="form-container">
                 <label for="email">Ingresa tu correo electrónico:</label>
                 <input type="email" id="email" name="email" placeholder="tuemail@ejemplo.com" required>
                 <button type="submit">Suscribirme</button>
@@ -164,16 +165,48 @@
             </div>
         </section>
 
-        <section class="cta">
-            <h2>¡Agenda tu Consulta Gratuita!</h2>
-            <p>Hablemos sobre cómo puedo ayudarte a transformar tu negocio en una sesión inicial de 30 minutos.</p>
-            <a href="mailto:tuemail@empresa.com?subject=Consulta Gratuita">Agendar Consulta</a>
+        <section>
+            <h2>Servicios</h2>
+            <div class="service-box">
+                <h3>1. Capacitación Especializada</h3>
+                <p>Te enseño cómo combinar datos, inteligencia artificial y herramientas NoCode para liderar proyectos innovadores. Mis talleres son prácticos, ágiles y están diseñados para que puedas aplicar lo aprendido desde el primer día.</p>
+                <ul>
+                    <li>Duración: 2-4 horas por sesión</li>
+                    <li>Precio: Desde COP $2.5M por taller</li>
+                </ul>
+                <a href="#" class="cta">Conocer más</a>
+            </div>
+
+            <div class="service-box">
+                <h3>2. Asesoría Integral</h3>
+                <p>Realizo un diagnóstico personalizado y te brindo recomendaciones específicas para optimizar tus proyectos en Data, IA o NoCode. Recibe orientación directa y práctica para resolver tus retos.</p>
+                <ul>
+                    <li>Duración: Paquetes de 5-10 horas</li>
+                    <li>Precio: Desde COP $3M por paquete</li>
+                </ul>
+                <a href="#" class="cta">Conocer más</a>
+            </div>
+
+            <div class="service-box">
+                <h3>3. Facilitación de Talleres Estratégicos</h3>
+                <p>Te ayudo a organizar y liderar sesiones estratégicas para priorizar proyectos, validar hipótesis y desarrollar soluciones de manera ágil y eficiente.</p>
+                <ul>
+                    <li>Duración: 2-6 horas por evento</li>
+                    <li>Precio: Desde COP $3M por sesión</li>
+                </ul>
+                <a href="#" class="cta">Conocer más</a>
+            </div>
         </section>
+
+        <section>
+            <h2>Sobre mí</h2>
+            <p>Soy Rogert Ovalle, un apasionado por la innovación, la tecnología y la creación de productos. Mi enfoque combina Data, IA y NoCode para ayudar a empresas a transformar sus procesos y escalar sus proyectos. A lo largo de los años, he trabajado en diversos ecosistemas de innovación y liderado iniciativas estratégicas para grandes empresas. Mi misión es empoderar a emprendedores y equipos con las herramientas adecuadas para alcanzar sus objetivos de manera eficiente y escalable.</p>
+        </section>
+
     </div>
 
     <footer>
-        <p>&copy; 2025 Rogert Ovalle - Data, IA & NoCode Product Management. Todos los derechos reservados.</p>
+        <p>&copy; 2025 Rogert Ovalle | <a href="https://wa.me/573058125551" target="_blank">WhatsApp</a> | <a href="https://www.linkedin.com/in/rogertovalle/" target="_blank">LinkedIn</a></p>
     </footer>
 </body>
 </html>
-
