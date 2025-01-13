@@ -58,6 +58,54 @@
             background: #333;
             color: #fff;
         }
+        form {
+            background: #fff;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        form input, form button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        form button {
+            background: #6200ea;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        form button:hover {
+            background: #3700b3;
+        }
+        .social {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .social a {
+            color: #6200ea;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .social a:hover {
+            text-decoration: underline;
+        }
+        .recommendations {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .recommendations blockquote {
+            margin: 20px 0;
+            padding: 10px 20px;
+            background: #fff;
+            border-left: 5px solid #6200ea;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -84,23 +132,37 @@
             </ul>
 
             <h3>3. Facilitación de Talleres Estratégicos</h3>
-            <p>Te ayudo a organizar y liderar sesiones estratégicas para priorizar proyectos, validar hipótesis y desarrollar MVPs de manera ágil y eficiente.</p>
+            <p>Te ayudo a organizar y liderar sesiones estratégicas para priorizar proyectos, validar hipótesis y desarrollar soluciones de manera ágil y eficiente.</p>
             <ul>
                 <li>Duración: 2-6 horas por evento</li>
                 <li>Precio: Desde COP $3M por sesión</li>
             </ul>
-
-            <h3>4. Creación de MVPs con IA y NoCode</h3>
-            <p>Construyo productos mínimos viables combinando capacidades de inteligencia artificial, datos y herramientas NoCode para que puedas lanzar tus ideas rápidamente.</p>
-            <ul>
-                <li>Tiempo estimado: 2-4 semanas</li>
-                <li>Precio: Desde COP $8M</li>
-            </ul>
         </section>
 
         <section>
-            <h2>¿Por Qué Elegirme?</h2>
-            <p>Con años de experiencia en Data, IA y NoCode, transformo tus ideas en soluciones prácticas, accesibles y escalables. Mi enfoque está en ayudarte a generar resultados tangibles y sostenibles para tu negocio.</p>
+            <h2>Curso Gratuito: Principios de Producto, Data Management e Inteligencia Artificial</h2>
+            <p>Recibe en tu correo los principales conceptos para conectar estrategia de producto, gestión de datos e inteligencia artificial. Aplica estas ideas para transformar tu negocio desde hoy.</p>
+            <form>
+                <label for="email">Ingresa tu correo electrónico:</label>
+                <input type="email" id="email" name="email" placeholder="tuemail@ejemplo.com" required>
+                <button type="submit">Suscribirme</button>
+            </form>
+        </section>
+
+        <section>
+            <h2>Sigue mi Trayectoria</h2>
+            <p>Conecta conmigo en <a href="https://www.linkedin.com" target="_blank">LinkedIn</a> y sigue la construcción de Victoriia en tiempo real. Comparte mi viaje mientras exploramos las posibilidades del Producto, los Datos y la Inteligencia Artificial.</p>
+        </section>
+
+        <section>
+            <h2>Recomendaciones</h2>
+            <div class="recommendations">
+                <blockquote>"La asesoría brindada por [Tu Nombre] en la Cámara de Comercio de Bogotá nos ayudó a estructurar nuevos modelos de negocio basados en datos. Altamente recomendada." - Maria Juliana Pinillos</blockquote>
+                <blockquote>"Trabajé con [Tu Nombre] en varios proyectos de ideación de modelos de negocio en la CCB, su enfoque y resultados fueron excepcionales." - Jhonatan Ardila</blockquote>
+                <blockquote>"[Tu Nombre] fue clave en la estructuración de ecosistemas de innovación que lideré. Su capacidad para conectar ideas y generar valor es única." - Maria Cristina Córdova</blockquote>
+                <blockquote>"Gracias a su mentoría en hackatones, logramos destacar entre los mejores. Gran mentor y facilitador." - Elkin Garavito</blockquote>
+                <blockquote>"Su enfoque en la creación de productos NoCode es excelente, ayudándome a lanzar un MVP funcional en tiempo récord." - Natalia Andrade</blockquote>
+            </div>
         </section>
 
         <section class="cta">
