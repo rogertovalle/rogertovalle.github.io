@@ -1,4 +1,8 @@
 // --- LISTA DE PALABRAS ---
+const sonidoCorrecto = new Audio('sounds/bien.wav');
+const sonidoIncorrecto = new Audio('sounds/mal.wav');
+const sonidoRacha = new Audio('sounds/racha.wav');
+
 const palabras = [
     'casa', 'perro', 'gato', 'luna', 'sol', 'mesa', 'silla', 'agua',
     'pelota', 'cometa', 'zapato', 'mochila', 'helado', 'caballo',
@@ -69,30 +73,31 @@ function mostrarSiguientePalabra() {
 
 // Función principal para revisar la palabra
 function revisarPalabra() {
-    escucharPalabra();
+    escucharPalabra(); // Siempre reproducir la palabra
+
     const palabraCorrecta = palabraActualElem.textContent.toLowerCase();
     const palabraUsuario = entradaUsuarioElem.value.toLowerCase().trim();
 
     if (palabraUsuario === palabraCorrecta) {
-        // --- RESPUESTA CORRECTA ---
-        const puntosGanados = 10 + palabraCorrecta.length; // 10 puntos base + 1 por cada letra
+        sonidoCorrecto.play();
+
+        const puntosGanados = 10 + palabraCorrecta.length;
         marcador += puntosGanados;
         racha++;
 
         areaFeedbackElem.innerHTML = `✔️ ¡Correcto! <span style="color: #fbc531;">+${puntosGanados}</span>`;
         areaFeedbackElem.className = 'correcto';
-        
-        // Comprobar si hay racha
+
         if (racha > 0 && racha % 5 === 0) {
             marcador += PUNTOS_POR_RACHA;
+            sonidoRacha.play(); // 🎉 Sonido especial para racha
             mostrarMensajeRacha();
         }
 
         indicePalabraActual++;
         actualizarMarcador();
         guardarProgreso();
-        
-        // Desactiva el botón para evitar clics rápidos
+
         botonRevisarElem.disabled = true;
         setTimeout(() => {
             mostrarSiguientePalabra();
@@ -100,17 +105,19 @@ function revisarPalabra() {
         }, 1800);
 
     } else {
-        // --- RESPUESTA INCORRECTA ---
-        racha = 0; // Se rompe la racha
+        sonidoIncorrecto.play();
+
+        racha = 0;
         areaFeedbackElem.textContent = '❌ Casi, ¡inténtalo de nuevo!';
         areaFeedbackElem.className = 'incorrecto';
-        
+
         setTimeout(() => {
             entradaUsuarioElem.value = '';
             areaFeedbackElem.textContent = '';
         }, 2000);
     }
 }
+
 
 // Función para escuchar la palabra
 function escucharPalabra() {
