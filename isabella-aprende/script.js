@@ -69,6 +69,7 @@ function mostrarSiguientePalabra() {
 
 // Función principal para revisar la palabra
 function revisarPalabra() {
+    escucharPalabra();
     const palabraCorrecta = palabraActualElem.textContent.toLowerCase();
     const palabraUsuario = entradaUsuarioElem.value.toLowerCase().trim();
 
