@@ -1,11 +1,56 @@
 // --- LISTA DE PALABRAS ---
 // ¡Puedes agregar todas las palabras que quieras aquí!
 const palabras = [
-    'casa', 'perro', 'gato', 'luna', 'sol', 'mesa', 'silla', 'agua',
-    'pelota', 'cometa', 'zapato', 'mochila', 'helado', 'caballo',
-    'manzana', 'fresa', 'plátano', 'naranja', 'familia', 'amigo',
-    'escuela', 'jugar', 'leer', 'escribir', 'mariposa', 'elefante',
-    'bicicleta', 'computadora', 'felicidad', 'aventura'
+    // Palabras básicas y de la casa
+    'agua', 'amigo', 'amiga', 'árbol', 'azul', 'bebé', 'blanco', 'boca',
+    'brazo', 'caballo', 'cabeza', 'cama', 'camisa', 'campo', 'carro',
+    'casa', 'cebra', 'cerdo', 'cielo', 'ciudad', 'cocina', 'conejo',
+    'corazón', 'cosa', 'cuaderno', 'cuchara', 'cuello', 'cuerpo', 'diente',
+    'dinero', 'doctor', 'dulce', 'escuela', 'espalda', 'espejo', 'estrella',
+    
+    // Familia y personas
+    'familia', 'fiesta', 'flor', 'fuego', 'gallina', 'gato', 'gente',
+    'gigante', 'globo', 'gracias', 'grande', 'guitarra', 'gusano', 'hambre',
+    'helado', 'hermana', 'hermano', 'hoja', 'hombre', 'hormiga', 'hospital',
+    'huevo', 'idea', 'iglesia', 'invierno', 'jabón', 'jamón', 'jarra',
+    
+    // Objetos y lugares
+    'jardín', 'jirafa', 'juego', 'juguete', 'lápiz', 'leche', 'lechuza',
+    'león', 'letra', 'libro', 'limón', 'llave', 'lluvia', 'luna', 'luz',
+    'maestro', 'mamá', 'mano', 'manzana', 'mañana', 'mariposa', 'martillo',
+    'mesa', 'mochila', 'mono', 'montaña', 'mujer', 'muñeca', 'música',
+    
+    // Naturaleza y animales
+    'naranja', 'nariz', 'nido', 'niña', 'niño', 'noche', 'nombre', 'nube',
+    'nuevo', 'número', 'ojo', 'oreja', 'oso', 'oveja', 'pájaro', 'pantalón',
+    'pan', 'papá', 'parque', 'pasto', 'pato', 'payaso', 'peces', 'pelota',
+    'pelo', 'pera', 'perro', 'pie', 'piedra', 'pierna', 'pingüino', 'piso',
+    
+    // Palabras con sílabas trabadas y complejas
+    'plátano', 'playa', 'plaza', 'pluma', 'pollo', 'primo', 'princesa',
+    'profesor', 'pueblo', 'puente', 'puerta', 'queso', 'ratón', 'regla',
+    'reloj', 'río', 'rojo', 'ropa', 'rosa', 'rueda', 'sal', 'sandía',
+    'sapo', 'serpiente', 'silla', 'sofá', 'sol', 'sombrero', 'sopa',
+    
+    // Adjetivos y más
+    'suelo', 'tarde', 'tarea', 'taza', 'techo', 'teléfono', 'tenedor',
+    'tigre', 'tijeras', 'tomate', 'torta', 'tortuga', 'trabajo', 'tren',
+    'triste', 'uva', 'vaca', 'vaso', 'vela', 'ventana', 'verano', 'verde',
+    'vestido', 'viento', 'violín', 'zapato', 'zoológico', 'zanahoria',
+
+    // Verbos comunes (acciones)
+    'abrir', 'ayudar', 'bailar', 'beber', 'buscar', 'caer', 'caminar',
+    'cantar', 'cerrar', 'cocinar', 'comer', 'comprar', 'correr', 'cortar',
+    'crecer', 'cuidar', 'dar', 'decir', 'dejar', 'dibujar', 'dormir',
+    'empezar', 'encontrar', 'enseñar', 'entrar', 'escribir', 'escuchar',
+    'esperar', 'estar', 'ganar', 'gritar', 'hablar', 'hacer', 'ir',
+    'jugar', 'lavar', 'leer', 'limpiar', 'llamar', 'llegar', 'llevar',
+    'llorar', 'meter', 'mirar', 'nadar', 'necesitar', 'oler', 'pagar',
+    'parar', 'pasar', 'pedir', 'pegar', 'pensar', 'perder', 'pintar',
+    'poder', 'poner', 'preguntar', 'querer', 'reír', 'romper', 'saber',
+    'salir', 'saltar', 'sentir', 'ser', 'soñar', 'subir', 'tener',
+    'terminar', 'tocar', 'tomar', 'traer', 'usar', 'venir', 'ver',
+    'viajar', 'vivir', 'volar', 'volver'
 ];
 
 // --- ELEMENTOS DE LA PÁGINA ---
