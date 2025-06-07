@@ -1,0 +1,85 @@
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background-color: #f0f8ff; /* Azul cielo pálido */
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.contenedor-principal {
+    text-align: center;
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    width: 90%;
+    max-width: 600px;
+}
+
+.area-palabra {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px; /* Espacio entre la palabra y el botón de audio */
+}
+
+#palabra-actual {
+    font-size: 6rem; /* Tamaño muy grande para fácil lectura */
+    color: #005a9c;
+    margin: 0;
+}
+
+#boton-escuchar {
+    font-size: 2rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+}
+
+#entrada-usuario {
+    width: 80%;
+    padding: 15px;
+    font-size: 1.5rem;
+    margin-top: 30px;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    text-align: center;
+}
+
+#boton-revisar {
+    display: block;
+    width: 60%;
+    padding: 20px;
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: white;
+    background-color: #28a745; /* Verde */
+    border: none;
+    border-radius: 10px;
+    margin: 30px auto 0 auto;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#boton-revisar:hover {
+    background-color: #218838;
+}
+
+#area-feedback {
+    margin-top: 20px;
+    font-size: 3rem;
+    height: 60px; /* Altura fija para evitar que la página salte */
+}
+
+/* Clases para el feedback */
+.correcto {
+    color: #28a745;
+}
+
+.incorrecto {
+    color: #dc3545;
+}
