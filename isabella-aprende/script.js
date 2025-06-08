@@ -16,9 +16,12 @@ const palabras = [
 // --- Elementos del DOM ---
 const palabraActualElem = document.getElementById('palabra-actual');
 const entradaUsuarioElem = document.getElementById('entrada-usuario');
+const botonRevisarElem = document.getElementById('boton-revisar');
 const areaFeedbackElem = document.getElementById('area-feedback');
+const botonEscucharElem = document.getElementById('boton-escuchar');
 const marcadorElem = document.getElementById('marcador');
 const mensajeRachaElem = document.getElementById('mensaje-racha');
+const botonReiniciarElem = document.getElementById('boton-reiniciar');
 const barraTiempoElem = document.getElementById('barra-tiempo');
 const dificultadSelect = document.getElementById('dificultad');
 
@@ -28,9 +31,7 @@ let marcador = 0;
 let racha = 0;
 let tiempoMaximo = 10000;
 let tiempoTimeout;
-
-let reconocimientoActivo = false;
-let recognition;
+let reconocimiento;
 
 const PUNTOS_POR_RACHA = 25;
 const tiemposPorDificultad = {
@@ -53,7 +54,7 @@ function guardarProgreso() {
   localStorage.setItem('indice_isabella', indicePalabraActual);
 }
 
-// --- UI ---
+// --- Actualizar UI ---
 function actualizarMarcador() {
   marcadorElem.textContent = `🪙 ${marcador}`;
 }
@@ -63,22 +64,6 @@ function mostrarMensajeRacha() {
   mensajeRachaElem.style.animation = 'none';
   mensajeRachaElem.offsetHeight;
   mensajeRachaElem.style.animation = 'fadeInOut 2.5s forwards';
-}
-
-function mostrarSiguientePalabra() {
-  if (indicePalabraActual >= palabras.length) {
-    palabraActualElem.textContent = '¡Felicidades!';
-    entradaUsuarioElem.style.display = 'none';
-    areaFeedbackElem.innerHTML = '🎉 ¡Completaste todas las palabras!';
-    return;
-  }
-
-  const palabra = palabras[indicePalabraActual];
-  palabraActualElem.textContent = palabra;
-  entradaUsuarioElem.value = '';
-  areaFeedbackElem.textContent = '';
-  iniciarTemporizador();
-  iniciarReconocimientoVoz();
 }
 
 // --- Temporizador ---
@@ -92,18 +77,41 @@ function iniciarTemporizador() {
   barraTiempoElem.style.transition = `width ${tiempoMaximo}ms linear`;
   barraTiempoElem.style.width = '0%';
 
-  tiempoTimeout = setTimeout(() => revisarPalabra('', true), tiempoMaximo);
+  tiempoTimeout = setTimeout(() => revisarPalabra(true), tiempoMaximo);
 }
 
-// --- Revisión ---
-function revisarPalabra(entrada, auto = false) {
+// --- Mostrar nueva palabra ---
+function mostrarSiguientePalabra() {
   clearTimeout(tiempoTimeout);
-  detenerReconocimientoVoz();
 
-  const correcta = palabras[indicePalabraActual].toLowerCase();
-  const entradaLimpia = entrada.toLowerCase().trim();
+  if (indicePalabraActual >= palabras.length) {
+    palabraActualElem.textContent = '¡Felicidades!';
+    entradaUsuarioElem.style.display = 'none';
+    botonRevisarElem.style.display = 'none';
+    areaFeedbackElem.innerHTML = '🎉 ¡Completaste todas las palabras!';
+    return;
+  }
 
-  if (entradaLimpia === correcta && !auto) {
+  palabraActualElem.textContent = palabras[indicePalabraActual];
+  entradaUsuarioElem.value = '';
+  areaFeedbackElem.textContent = '';
+  iniciarTemporizador();
+
+  // Esperar un poco antes de iniciar reconocimiento para evitar solapamiento de voz
+  setTimeout(() => {
+    escucharUnaPalabra();
+  }, 600);
+}
+
+// --- Evaluación ---
+function revisarPalabra(auto = false) {
+  clearTimeout(tiempoTimeout);
+  if (reconocimiento) reconocimiento.stop();
+
+  const correcta = palabraActualElem.textContent.toLowerCase();
+  const entrada = entradaUsuarioElem.value.toLowerCase().trim();
+
+  if (entrada === correcta && !auto) {
     sonidoCorrecto.play();
     const puntos = 10 + correcta.length;
     marcador += puntos;
@@ -116,82 +124,71 @@ function revisarPalabra(entrada, auto = false) {
       sonidoRacha.play();
       mostrarMensajeRacha();
     }
-
-    setTimeout(() => {
-      escucharPalabra(() => {
-        indicePalabraActual++;
-        actualizarMarcador();
-        guardarProgreso();
-        mostrarSiguientePalabra();
-      });
-    }, 1000);
   } else {
     sonidoIncorrecto.play();
     racha = 0;
     areaFeedbackElem.textContent = auto ? '⏰ ¡Tiempo agotado!' : '❌ Casi, ¡inténtalo de nuevo!';
     areaFeedbackElem.className = 'incorrecto';
-
-    setTimeout(() => {
-      indicePalabraActual++;
-      actualizarMarcador();
-      guardarProgreso();
-      mostrarSiguientePalabra();
-    }, 1500);
   }
+
+  actualizarMarcador();
+  guardarProgreso();
+  indicePalabraActual++;
+
+  // Leer la palabra como retroalimentación y luego pasar a la siguiente
+  setTimeout(() => {
+    escucharPalabra(() => {
+      mostrarSiguientePalabra();
+    });
+  }, 1800);
 }
 
-// --- TTS ---
+// --- Texto a voz con callback ---
 function escucharPalabra(callback) {
   const palabra = palabraActualElem.textContent;
   if ('speechSynthesis' in window) {
     const msg = new SpeechSynthesisUtterance(palabra);
     msg.lang = 'es-ES';
     msg.rate = 0.9;
-    msg.onend = () => callback && callback();
+    msg.onend = () => {
+      if (callback) callback();
+    };
     window.speechSynthesis.speak(msg);
-  } else {
-    callback && callback();
+  } else if (callback) {
+    callback();
   }
 }
 
-// --- Voz ---
-function iniciarReconocimientoVoz() {
+// --- Inicialización de reconocimiento ---
+function inicializarReconocimiento() {
   if (!('webkitSpeechRecognition' in window)) {
-    alert('Tu navegador no soporta el reconocimiento de voz.');
+    alert('Tu navegador no soporta reconocimiento de voz.');
     return;
   }
 
-  recognition = new webkitSpeechRecognition();
-  recognition.lang = 'es-ES';
-  recognition.continuous = false;
-  recognition.interimResults = false;
+  reconocimiento = new webkitSpeechRecognition();
+  reconocimiento.lang = 'es-ES';
+  reconocimiento.continuous = false;
+  reconocimiento.interimResults = false;
 
-  recognition.onresult = (event) => {
+  reconocimiento.onresult = (event) => {
     const resultado = event.results[0][0].transcript.trim().toLowerCase();
     entradaUsuarioElem.value = resultado;
-    revisarPalabra(resultado);
+    revisarPalabra(); // Autoevaluar directamente
   };
 
-  recognition.onerror = (event) => {
-    console.error('Error de reconocimiento:', event.error);
+  reconocimiento.onerror = (event) => {
+    console.warn('Reconocimiento error:', event.error);
   };
-
-  recognition.onend = () => {
-    // Si aún no se ha evaluado, puede reintentar si se desea
-  };
-
-  recognition.start();
-  reconocimientoActivo = true;
 }
 
-function detenerReconocimientoVoz() {
-  if (recognition && reconocimientoActivo) {
-    recognition.stop();
-    reconocimientoActivo = false;
-  }
+function escucharUnaPalabra() {
+  if (!reconocimiento) return;
+  reconocimiento.stop();
+  reconocimiento.start();
 }
 
-// --- Reiniciar ---
+// --- Otros ---
 function reiniciarPuntaje() {
   if (confirm('¿Estás segura de que quieres reiniciar el puntaje a cero?')) {
     localStorage.removeItem('marcador_isabella');
@@ -200,6 +197,15 @@ function reiniciarPuntaje() {
   }
 }
 
+// --- Eventos (botones manuales aún funcionales si necesitas) ---
+botonRevisarElem.addEventListener('click', () => revisarPalabra());
+botonEscucharElem.addEventListener('click', () => {
+  escucharPalabra();
+});
+botonReiniciarElem.addEventListener('click', reiniciarPuntaje);
+
 // --- Inicializar ---
+entradaUsuarioElem.disabled = true;
 cargarProgreso();
+inicializarReconocimiento();
 mostrarSiguientePalabra();
