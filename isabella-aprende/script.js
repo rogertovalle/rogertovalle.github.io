@@ -104,6 +104,7 @@ function iniciarTemporizador() {
 // --- Revisar palabra ---
 function revisarPalabra(auto = false) {
   clearTimeout(tiempoTimeout);
+  escucharPalabra();
 
   const correcta = palabraActualElem.textContent.toLowerCase();
   const entrada = entradaUsuarioElem.value.toLowerCase().trim();
