@@ -1,52 +1,44 @@
+// --- script.js ---
+
 // --- Sonidos ---
 const sonidoCorrecto = new Audio('sounds/bien.wav');
 const sonidoIncorrecto = new Audio('sounds/mal.wav');
 const sonidoRacha = new Audio('sounds/racha.wav');
 
 // --- Lista de palabras ---
-const palabras = [
-  'casa', 'perro', 'gato', 'luna', 'sol', 'mesa', 'silla', 'agua',
-  'pelota', 'cometa', 'zapato', 'mochila', 'helado', 'caballo',
-  'manzana', 'fresa', 'plátano', 'naranja', 'familia', 'amigo',
-  'escuela', 'jugar', 'leer', 'escribir', 'mariposa', 'elefante',
-  'bicicleta', 'computadora', 'felicidad', 'aventura', 'cocodrilo',
-  'helicóptero', 'dinosaurio', 'hamburguesa', 'inteligente'
-];
+const palabras = [ /* tu lista de palabras */ ];
 
 // --- Elementos del DOM ---
-const palabraActualElem = document.getElementById('palabra-actual');
-const entradaUsuarioElem = document.getElementById('entrada-usuario');
-const botonRevisarElem = document.getElementById('boton-revisar');
-const areaFeedbackElem = document.getElementById('area-feedback');
-const botonEscucharElem = document.getElementById('boton-escuchar');
-const marcadorElem = document.getElementById('marcador');
-const mensajeRachaElem = document.getElementById('mensaje-racha');
-const botonReiniciarElem = document.getElementById('boton-reiniciar');
-const barraTiempoElem = document.getElementById('barra-tiempo');
-const dificultadSelect = document.getElementById('dificultad');
+const palabraActualElem   = document.getElementById('palabra-actual');
+const entradaUsuarioElem  = document.getElementById('entrada-usuario');
+const areaFeedbackElem    = document.getElementById('area-feedback');
+const marcadorElem        = document.getElementById('marcador');
+const mensajeRachaElem    = document.getElementById('mensaje-racha');
+const barraTiempoElem     = document.getElementById('barra-tiempo');
+const dificultadSelect    = document.getElementById('dificultad');
+const botonReiniciarElem  = document.getElementById('boton-reiniciar');
 
-// --- Variables de estado ---
+// --- Estado ---
 let indicePalabraActual = 0;
-let marcador = 0;
-let racha = 0;
-let tiempoMaximo = 10000;
+let marcador            = 0;
+let racha               = 0;
 let tiempoTimeout;
-let reconocimiento;
+let recognition;        // SpeechRecognition instance
 
 const PUNTOS_POR_RACHA = 25;
 const tiemposPorDificultad = {
-  facil: 10000,
-  medio: 7000,
-  dificil: 5000,
-  experto: 2000
+  facil:   10000,
+  medio:    7000,
+  dificil:  5000,
+  experto:  2000
 };
 
-// --- Progreso en localStorage ---
+// --- LocalStorage ---
 function cargarProgreso() {
-  const m = localStorage.getItem('marcador_isabella');
+  const m   = localStorage.getItem('marcador_isabella');
   const idx = localStorage.getItem('indice_isabella');
-  if (m) marcador = parseInt(m, 10);
-  if (idx) indicePalabraActual = parseInt(idx, 10);
+  if (m)   marcador = +m;
+  if (idx) indicePalabraActual = +idx;
   actualizarMarcador();
 }
 function guardarProgreso() {
@@ -54,11 +46,10 @@ function guardarProgreso() {
   localStorage.setItem('indice_isabella', indicePalabraActual);
 }
 
-// --- Actualizar UI ---
+// --- UI Helpers ---
 function actualizarMarcador() {
   marcadorElem.textContent = `🪙 ${marcador}`;
 }
-
 function mostrarMensajeRacha() {
   mensajeRachaElem.textContent = `¡RACHA DE ${racha}! +${PUNTOS_POR_RACHA} EXTRA`;
   mensajeRachaElem.style.animation = 'none';
@@ -66,56 +57,64 @@ function mostrarMensajeRacha() {
   mensajeRachaElem.style.animation = 'fadeInOut 2.5s forwards';
 }
 
-// --- Temporizador ---
+// --- Temporizador & sincronización micrófono ---
 function iniciarTemporizador() {
-  const nivel = dificultadSelect.value;
-  tiempoMaximo = tiemposPorDificultad[nivel] || 10000;
+  const nivel      = dificultadSelect.value;
+  const tiempoMax  = tiemposPorDificultad[nivel] || 10000;
 
+  // Barra visual
   barraTiempoElem.style.transition = 'none';
   barraTiempoElem.style.width = '100%';
-  barraTiempoElem.offsetWidth;
-  barraTiempoElem.style.transition = `width ${tiempoMaximo}ms linear`;
+  barraTiempoElem.offsetWidth; 
+  barraTiempoElem.style.transition = `width ${tiempoMax}ms linear`;
   barraTiempoElem.style.width = '0%';
 
-  tiempoTimeout = setTimeout(() => revisarPalabra(true), tiempoMaximo);
+  // Cuando se acabe el tiempo, forzamos parada y fallo
+  tiempoTimeout = setTimeout(() => {
+    recognition.stop();
+    revisarPalabra(true);
+  }, tiempoMax);
 }
 
-// --- Mostrar nueva palabra ---
+// --- Mostrar la siguiente palabra ---
 function mostrarSiguientePalabra() {
   clearTimeout(tiempoTimeout);
+  areaFeedbackElem.textContent = '';
 
   if (indicePalabraActual >= palabras.length) {
     palabraActualElem.textContent = '¡Felicidades!';
     entradaUsuarioElem.style.display = 'none';
-    botonRevisarElem.style.display = 'none';
-    areaFeedbackElem.innerHTML = '🎉 ¡Completaste todas las palabras!';
     return;
   }
 
+  // 1) Muestra la palabra
   palabraActualElem.textContent = palabras[indicePalabraActual];
   entradaUsuarioElem.value = '';
-  areaFeedbackElem.textContent = '';
+
+  // 2) Inicia barra de tiempo
   iniciarTemporizador();
 
-  // Esperar un poco antes de iniciar reconocimiento para evitar solapamiento de voz
-  setTimeout(() => {
-    escucharUnaPalabra();
-  }, 600);
+  // 3) Da tiempo al TTS y luego arranca reconocimiento
+  escucharPalabra(() => {
+    recognition.start();
+  });
 }
 
-// --- Evaluación ---
-function revisarPalabra(auto = false) {
+// --- Evaluación de la respuesta ---
+function revisarPalabra(auto = false, entradaVoz = null) {
   clearTimeout(tiempoTimeout);
-  if (reconocimiento) reconocimiento.stop();
+  recognition.stop();
 
   const correcta = palabraActualElem.textContent.toLowerCase();
-  const entrada = entradaUsuarioElem.value.toLowerCase().trim();
+  const entrada  = entradaVoz !== null
+                   ? entradaVoz
+                   : entradaUsuarioElem.value.toLowerCase().trim();
 
   if (entrada === correcta && !auto) {
+    // Correcto
     sonidoCorrecto.play();
     const puntos = 10 + correcta.length;
-    marcador += puntos;
-    racha++;
+    marcador += puntos; racha++;
     areaFeedbackElem.innerHTML = `✔️ ¡Correcto! <span style="color:#fbc531;">+${puntos}</span>`;
     areaFeedbackElem.className = 'correcto';
 
@@ -125,87 +124,82 @@ function revisarPalabra(auto = false) {
       mostrarMensajeRacha();
     }
   } else {
+    // Incorrecto o timeout
     sonidoIncorrecto.play();
     racha = 0;
-    areaFeedbackElem.textContent = auto ? '⏰ ¡Tiempo agotado!' : '❌ Casi, ¡inténtalo de nuevo!';
+    areaFeedbackElem.textContent = auto
+      ? '⏰ ¡Tiempo agotado!'
+      : '❌ Casi, ¡inténtalo de nuevo!';
     areaFeedbackElem.className = 'incorrecto';
   }
 
+  // Avanza estado
   actualizarMarcador();
   guardarProgreso();
   indicePalabraActual++;
 
-  // Leer la palabra como retroalimentación y luego pasar a la siguiente
+  // Después de 1.8s lee la palabra (feedback) y pasa a la siguiente
   setTimeout(() => {
-    escucharPalabra(() => {
-      mostrarSiguientePalabra();
-    });
+    escucharPalabra(mostrarSiguientePalabra);
   }, 1800);
 }
 
-// --- Texto a voz con callback ---
-function escucharPalabra(callback) {
+// --- Text-to-Speech con callback ---
+function escucharPalabra(onEnd) {
   const palabra = palabraActualElem.textContent;
   if ('speechSynthesis' in window) {
     const msg = new SpeechSynthesisUtterance(palabra);
-    msg.lang = 'es-ES';
-    msg.rate = 0.9;
-    msg.onend = () => {
-      if (callback) callback();
-    };
+    msg.lang = 'es-ES'; msg.rate = 0.9;
+    msg.onend = () => { if (onEnd) onEnd(); };
     window.speechSynthesis.speak(msg);
-  } else if (callback) {
-    callback();
+  } else {
+    if (onEnd) onEnd();
   }
 }
 
-// --- Inicialización de reconocimiento ---
+// --- Inicializar SpeechRecognition ---
 function inicializarReconocimiento() {
   if (!('webkitSpeechRecognition' in window)) {
     alert('Tu navegador no soporta reconocimiento de voz.');
     return;
   }
 
-  reconocimiento = new webkitSpeechRecognition();
-  reconocimiento.lang = 'es-ES';
-  reconocimiento.continuous = false;
-  reconocimiento.interimResults = false;
+  recognition = new webkitSpeechRecognition();
+  recognition.lang = 'es-ES';
+  recognition.continuous = true;     // escucha toda la ventana de tiempo
+  recognition.interimResults = false;
 
-  reconocimiento.onresult = (event) => {
-    const resultado = event.results[0][0].transcript.trim().toLowerCase();
-    entradaUsuarioElem.value = resultado;
-    revisarPalabra(); // Autoevaluar directamente
+  recognition.onresult = (event) => {
+    // Toma el último resultado completo
+    const raw = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
+    // Filtra duplicados y sílabas: toma solo el último token
+    const tokens = raw.split(/\s+/);
+    const ultimo = tokens[tokens.length - 1];
+
+    entradaUsuarioElem.value = ultimo;
+    recognition.stop();
+    revisarPalabra(false, ultimo);
   };
 
-  reconocimiento.onerror = (event) => {
-    console.warn('Reconocimiento error:', event.error);
+  recognition.onerror = (e) => {
+    console.warn('SpeechRecognition error:', e.error);
   };
 }
 
-function escucharUnaPalabra() {
-  if (!reconocimiento) return;
-  reconocimiento.stop();
-  reconocimiento.start();
-}
-
-// --- Otros ---
+// --- Reiniciar juego ---
 function reiniciarPuntaje() {
-  if (confirm('¿Estás segura de que quieres reiniciar el puntaje a cero?')) {
+  if (confirm('¿Seguro que quieres reiniciar el puntaje?')) {
     localStorage.removeItem('marcador_isabella');
     localStorage.removeItem('indice_isabella');
     location.reload();
   }
 }
 
-// --- Eventos (botones manuales aún funcionales si necesitas) ---
-botonRevisarElem.addEventListener('click', () => revisarPalabra());
-botonEscucharElem.addEventListener('click', () => {
-  escucharPalabra();
-});
-botonReiniciarElem.addEventListener('click', reiniciarPuntaje);
-
-// --- Inicializar ---
+// --- Inicialización ---
 entradaUsuarioElem.disabled = true;
 cargarProgreso();
 inicializarReconocimiento();
 mostrarSiguientePalabra();
+
+// Maneja reinicio
+botonReiniciarElem.addEventListener('click', reiniciarPuntaje);
