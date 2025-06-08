@@ -1,26 +1,64 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Juego de Palabras para Isabela</title>
-    <link rel="stylesheet" href="style.css" />
-    <link rel="icon" href="favicon.ico" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Isabella Lee: Aventura de Palabras</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <div id="contenedor">
-        <div id="marcador">🪙 130</div>
-        <h1 id="palabra-actual">palabra</h1>
-        <input type="text" id="entrada-usuario" placeholder="Escribe la palabra aquí" autocomplete="off" />
-        <div>
-            <button id="boton-revisar">✅ Revisar</button>
-            <button id="boton-escuchar">🔊 Escuchar</button>
-            <button id="boton-reiniciar">🔄 Reiniciar</button>
-        </div>
-        <div id="area-feedback"></div>
-        <div id="mensaje-racha"></div>
+  <!-- Marcador -->
+  <div id="marcador">🪙 110</div>
+
+  <!-- Tarjeta principal -->
+  <div class="contenedor-principal">
+
+    <!-- Selector de dificultad -->
+    <div id="selector-dificultad">
+      <label for="dificultad">Dificultad:</label>
+      <select id="dificultad">
+        <option value="facil">🟢 Fácil (10s)</option>
+        <option value="medio">🟡 Medio (7s)</option>
+        <option value="dificil">🔴 Difícil (5s)</option>
+        <option value="experto">🔥 Experto (2s)</option>
+      </select>
     </div>
 
-    <script src="script.js"></script>
+    <!-- Mensaje de racha -->
+    <div id="mensaje-racha"></div>
+
+    <!-- Área de la palabra actual -->
+    <div class="area-palabra">
+      <h1 id="palabra-actual">Cargando...</h1>
+      <button id="boton-escuchar" title="Escuchar la palabra">🔊</button>
+    </div>
+
+    <!-- Barra de tiempo -->
+    <div id="barra-tiempo-container">
+      <div id="barra-tiempo"></div>
+    </div>
+
+    <!-- Entrada de usuario -->
+    <input
+      type="text"
+      id="entrada-usuario"
+      placeholder="Escribe la palabra..."
+      autocomplete="off"
+      autocorrect="off"
+      autocapitalize="off"
+      spellcheck="false"
+    />
+
+    <!-- Botón principal revisar -->
+    <button id="boton-revisar">Revisar</button>
+
+    <!-- Área de feedback -->
+    <div id="area-feedback"></div>
+  </div>
+
+  <!-- Botón reiniciar -->
+  <button id="boton-reiniciar">Reiniciar puntaje</button>
+
+  <script src="script.js"></script>
 </body>
 </html>
