@@ -144,7 +144,9 @@ body::before {
 }
 
 /* Input usuario */
+/* Mostrar campo de entrada como deshabilitado */
 #entrada-usuario {
+  display: block;
   width: 80%;
   padding: 15px;
   font-size: 1.5rem;
@@ -152,6 +154,11 @@ body::before {
   border: 2px solid #ccc;
   border-radius: 10px;
   text-align: center;
+  background-color: #e9ecef; /* gris claro */
+  color: #495057;
+  pointer-events: none;  /* Impide interacción */
+  opacity: 1;  /* Se ve normal */
+  user-select: none;  /* No se puede seleccionar texto */
 }
 
 /* Botón revisar */
@@ -212,11 +219,11 @@ body::before {
   transition: background-color 0.2s;
 }
 
-#boton-dictado:hover {
-  background-color: #0056b3;
-}
-
-#entrada-usuario {
+/* Ocultar botón de dictado si no se usa */
+#boton-dictado {
   display: none;
 }
 
+#boton-revisar {
+  display: none;
+}
