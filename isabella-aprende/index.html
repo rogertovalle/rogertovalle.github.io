@@ -38,21 +38,16 @@
       <div id="barra-tiempo"></div>
     </div>
 
-    <!-- Entrada de usuario -->
+    <!-- Entrada de usuario (solo visible, no editable) -->
     <input
       type="text"
       id="entrada-usuario"
-      placeholder="Escribe la palabra..."
-      autocomplete="off"
-      autocorrect="off"
-      autocapitalize="off"
-      spellcheck="false"
+      placeholder="Escuchando..."
+      disabled
     />
-    <button id="boton-dictado" title="Hablar la palabra">🎤</button>
 
-
-    <!-- Botón principal revisar -->
-    <button id="boton-revisar">Revisar</button>
+    <!-- Botón revisar (ya no necesario, pero opcional si lo usas en pruebas) -->
+    <button id="boton-revisar" style="display: none;">Revisar</button>
 
     <!-- Área de feedback -->
     <div id="area-feedback"></div>
