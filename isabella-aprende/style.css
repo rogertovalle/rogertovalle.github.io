@@ -1,88 +1,201 @@
-@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap');
+/* --- style.css --- */
 
+/* Base */
 body {
-    font-family: 'Comic Neue', sans-serif;
-    background: radial-gradient(circle, #ffeaa7 0%, #fab1a0 100%);
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background-color: #f0f8ff;
+  color: #333;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  overflow: hidden;
+  position: relative;
 }
 
-#contenedor {
-    background-color: white;
-    padding: 2em;
-    border-radius: 20px;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-    text-align: center;
-    max-width: 600px;
-    width: 90%;
+/* Fondo animado */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 30% 40%, rgba(173,216,230,0.2), transparent),
+              radial-gradient(circle at 70% 60%, rgba(255,182,193,0.2), transparent),
+              repeating-linear-gradient(45deg, rgba(0,128,128,0.04) 0px, rgba(0,128,128,0.04) 2px, transparent 2px, transparent 4px);
+  background-size: 400% 400%;
+  animation: fondoEspiaSuave 80s linear infinite;
+  z-index: -1;
+  opacity: 0.2;
+  filter: blur(0.5px);
 }
 
-#palabra-actual {
-    font-size: 2.5em;
-    margin-bottom: 20px;
-    transition: transform 0.3s ease, opacity 0.3s ease;
+@keyframes fondoEspiaSuave {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 100% 100%; }
 }
 
-#palabra-actual.animada {
-    transform: scale(1.2);
-    opacity: 0.7;
-}
-
-input, button {
-    font-family: inherit;
-    padding: 10px;
-    font-size: 1.2em;
-    margin: 10px;
-    border: none;
-    border-radius: 10px;
-    outline: none;
-}
-
-button {
-    background-color: #74b9ff;
-    color: white;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-button:hover {
-    background-color: #0984e3;
-}
-
-.correcto {
-    color: #2ecc71;
-    animation: popIn 0.3s ease;
-}
-
-.incorrecto {
-    color: #e74c3c;
-}
-
+/* Marcador */
 #marcador {
-    font-size: 1.5em;
-    margin-bottom: 10px;
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: #ffc107;
+  color: #333;
+  font-size: 1.8rem;
+  font-weight: bold;
+  padding: 10px 20px;
+  border-radius: 20px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  z-index: 100;
 }
 
+/* Tarjeta principal */
+.contenedor-principal {
+  background-color: #ffffff;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  width: 90%;
+  max-width: 600px;
+  text-align: center;
+  position: relative;
+}
+
+/* Selector dificultad */
+#selector-dificultad {
+  margin-bottom: 20px;
+}
+#selector-dificultad label {
+  font-weight: bold;
+  margin-right: 8px;
+}
+#selector-dificultad select {
+  font-size: 1rem;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 2px solid #ccc;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  transition: border-color 0.3s, background-color 0.3s;
+}
+#selector-dificultad select:hover {
+  border-color: #005a9c;
+  background-color: #e6f2ff;
+}
+
+/* Mensaje racha */
 #mensaje-racha {
-    font-size: 1.2em;
-    font-weight: bold;
-    color: #fbc531;
-    opacity: 0;
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #ff4757;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 15px;
+  font-weight: bold;
+  animation: fadeInOut 2.5s forwards;
+  opacity: 0;
 }
-
 @keyframes fadeInOut {
-    0% { opacity: 0; transform: scale(0.8); }
-    10% { opacity: 1; transform: scale(1); }
-    90% { opacity: 1; }
-    100% { opacity: 0; }
+  0% { opacity: 0; top: -30px; }
+  20% { opacity: 1; top: -50px; }
+  80% { opacity: 1; top: -50px; }
+  100% { opacity: 0; top: -30px; }
 }
 
-@keyframes popIn {
-    0% { transform: scale(0.5); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
+/* Área palabra */
+.area-palabra {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+}
+#palabra-actual {
+  font-size: 6rem;
+  color: #005a9c;
+  margin: 0;
+}
+#boton-escuchar {
+  font-size: 2rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+}
+
+/* Barra de tiempo */
+#barra-tiempo-container {
+  width: 100%;
+  height: 10px;
+  background-color: #ddd;
+  border-radius: 5px;
+  margin: 20px 0;
+  overflow: hidden;
+}
+#barra-tiempo {
+  height: 100%;
+  width: 100%;
+  background-color: #28a745;
+  transition: width linear;
+}
+
+/* Input usuario */
+#entrada-usuario {
+  width: 80%;
+  padding: 15px;
+  font-size: 1.5rem;
+  margin-top: 10px;
+  border: 2px solid #ccc;
+  border-radius: 10px;
+  text-align: center;
+}
+
+/* Botón revisar */
+#boton-revisar {
+  display: block;
+  width: 60%;
+  padding: 20px;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: white;
+  background-color: #28a745;
+  border: none;
+  border-radius: 10px;
+  margin: 30px auto 0;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+#boton-revisar:hover {
+  background-color: #218838;
+}
+
+/* Feedback */
+#area-feedback {
+  margin-top: 20px;
+  font-size: 3rem;
+  height: 60px;
+}
+.correcto { color: #28a745; }
+.incorrecto { color: #dc3545; }
+
+/* Botón reiniciar */
+#boton-reiniciar {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  opacity: 0.5;
+}
+#boton-reiniciar:hover {
+  opacity: 1;
 }
