@@ -1,7 +1,7 @@
-// --- LISTA DE PALABRAS ---
 const sonidoCorrecto = new Audio('sounds/bien.wav');
 const sonidoIncorrecto = new Audio('sounds/mal.wav');
 const sonidoRacha = new Audio('sounds/racha.wav');
+const sonidoTic = new Audio('sounds/tic.wav');
 
 const palabras = [
     'casa', 'perro', 'gato', 'luna', 'sol', 'mesa', 'silla', 'agua',
@@ -22,138 +22,146 @@ const marcadorElem = document.getElementById('marcador');
 const mensajeRachaElem = document.getElementById('mensaje-racha');
 const botonReiniciarElem = document.getElementById('boton-reiniciar');
 
-// --- LÓGICA DE GAMIFICACIÓN ---
+// --- LÓGICA ---
+let palabrasBarajadas = [];
 let indicePalabraActual = 0;
 let marcador = 0;
 let racha = 0;
-const PUNTOS_POR_RACHA = 25; // Monedas extra por cada 5 aciertos seguidos
+const PUNTOS_POR_RACHA = 25;
 
-// Carga el marcador guardado en el navegador
+// Baraja las palabras
+function barajarPalabras(arr) {
+    return arr.sort(() => Math.random() - 0.5);
+}
+
+// Cargar progreso
 function cargarProgreso() {
     const marcadorGuardado = localStorage.getItem('marcador_isabella');
-    if (marcadorGuardado) {
-        marcador = parseInt(marcadorGuardado, 10);
-    }
+    const indiceGuardado = localStorage.getItem('indice_isabella');
+    if (marcadorGuardado) marcador = parseInt(marcadorGuardado, 10);
+    if (indiceGuardado) indicePalabraActual = parseInt(indiceGuardado, 10);
     actualizarMarcador();
 }
 
-// Guarda el marcador en el navegador
+// Guardar progreso
 function guardarProgreso() {
     localStorage.setItem('marcador_isabella', marcador);
+    localStorage.setItem('indice_isabella', indicePalabraActual);
 }
 
-// Actualiza el texto del marcador en pantalla
 function actualizarMarcador() {
     marcadorElem.textContent = `🪙 ${marcador}`;
 }
 
-// Muestra el mensaje de racha
 function mostrarMensajeRacha() {
     mensajeRachaElem.textContent = `¡RACHA DE ${racha}! +${PUNTOS_POR_RACHA} EXTRA`;
-    // Reinicia la animación
     mensajeRachaElem.style.animation = 'none';
-    mensajeRachaElem.offsetHeight; // Truco para forzar el reinicio
+    mensajeRachaElem.offsetHeight;
     mensajeRachaElem.style.animation = 'fadeInOut 2.5s forwards';
 }
 
-// Función principal para mostrar la siguiente palabra
 function mostrarSiguientePalabra() {
-    if (indicePalabraActual >= palabras.length) {
+    if (indicePalabraActual >= palabrasBarajadas.length) {
         palabraActualElem.textContent = '¡Felicidades!';
         entradaUsuarioElem.style.display = 'none';
         botonRevisarElem.style.display = 'none';
         areaFeedbackElem.innerHTML = '🎉 ¡Completaste todas las palabras!';
         return;
     }
-    palabraActualElem.textContent = palabras[indicePalabraActual];
+
+    palabraActualElem.textContent = palabrasBarajadas[indicePalabraActual];
+    palabraActualElem.classList.add('animada');
+    setTimeout(() => palabraActualElem.classList.remove('animada'), 300);
     entradaUsuarioElem.value = '';
     areaFeedbackElem.textContent = '';
     entradaUsuarioElem.focus();
 }
 
-// Función principal para revisar la palabra
 function revisarPalabra() {
-    escucharPalabra(); // Siempre reproducir la palabra
+    botonRevisarElem.disabled = true;
+    escucharPalabra();
 
-    const palabraCorrecta = palabraActualElem.textContent.toLowerCase();
-    const palabraUsuario = entradaUsuarioElem.value.toLowerCase().trim();
+    setTimeout(() => {
+        const palabraCorrecta = palabraActualElem.textContent.toLowerCase();
+        const palabraUsuario = entradaUsuarioElem.value.toLowerCase().trim();
 
-    if (palabraUsuario === palabraCorrecta) {
-        sonidoCorrecto.play();
+        if (palabraUsuario === palabraCorrecta) {
+            sonidoCorrecto.play();
+            const puntosGanados = 10 + palabraCorrecta.length;
+            marcador += puntosGanados;
+            racha++;
 
-        const puntosGanados = 10 + palabraCorrecta.length;
-        marcador += puntosGanados;
-        racha++;
+            areaFeedbackElem.innerHTML = `✔️ ¡Correcto! <span style="color: #fbc531;">+${puntosGanados}</span>`;
+            areaFeedbackElem.className = 'correcto';
 
-        areaFeedbackElem.innerHTML = `✔️ ¡Correcto! <span style="color: #fbc531;">+${puntosGanados}</span>`;
-        areaFeedbackElem.className = 'correcto';
+            if (racha % 5 === 0) {
+                marcador += PUNTOS_POR_RACHA;
+                sonidoRacha.play();
+                mostrarMensajeRacha();
+            }
 
-        if (racha > 0 && racha % 5 === 0) {
-            marcador += PUNTOS_POR_RACHA;
-            sonidoRacha.play(); // 🎉 Sonido especial para racha
-            mostrarMensajeRacha();
+            indicePalabraActual++;
+            actualizarMarcador();
+            guardarProgreso();
+
+            setTimeout(() => {
+                mostrarSiguientePalabra();
+                botonRevisarElem.disabled = false;
+            }, 1800);
+
+        } else {
+            sonidoIncorrecto.play();
+            racha = 0;
+            areaFeedbackElem.textContent = '❌ Casi, ¡inténtalo de nuevo!';
+            areaFeedbackElem.className = 'incorrecto';
+
+            setTimeout(() => {
+                entradaUsuarioElem.value = '';
+                areaFeedbackElem.textContent = '';
+                botonRevisarElem.disabled = false;
+            }, 2000);
         }
-
-        indicePalabraActual++;
-        actualizarMarcador();
-        guardarProgreso();
-
-        botonRevisarElem.disabled = true;
-        setTimeout(() => {
-            mostrarSiguientePalabra();
-            botonRevisarElem.disabled = false;
-        }, 1800);
-
-    } else {
-        sonidoIncorrecto.play();
-
-        racha = 0;
-        areaFeedbackElem.textContent = '❌ Casi, ¡inténtalo de nuevo!';
-        areaFeedbackElem.className = 'incorrecto';
-
-        setTimeout(() => {
-            entradaUsuarioElem.value = '';
-            areaFeedbackElem.textContent = '';
-        }, 2000);
-    }
+    }, 1000); // Espera para que escuche antes de evaluar
 }
 
-
-// Función para escuchar la palabra
 function escucharPalabra() {
     const palabra = palabraActualElem.textContent;
     if ('speechSynthesis' in window) {
         const utterance = new SpeechSynthesisUtterance(palabra);
         utterance.lang = 'es-ES';
-        utterance.rate = 0.9; // Un poco más lento para que sea más claro
+        utterance.rate = 0.9;
         window.speechSynthesis.speak(utterance);
     } else {
         alert("Tu navegador no soporta la función de escuchar palabras.");
     }
 }
 
-// Función para reiniciar todo
 function reiniciarPuntaje() {
     if (confirm('¿Estás segura de que quieres reiniciar tu puntaje a cero?')) {
         marcador = 0;
         racha = 0;
         indicePalabraActual = 0;
         localStorage.removeItem('marcador_isabella');
-        location.reload(); // Recarga la página para empezar de cero
+        localStorage.removeItem('indice_isabella');
+        location.reload();
     }
 }
 
-// --- ASIGNAR EVENTOS ---
+// Eventos
 botonRevisarElem.addEventListener('click', revisarPalabra);
 botonEscucharElem.addEventListener('click', escucharPalabra);
 botonReiniciarElem.addEventListener('click', reiniciarPuntaje);
 
 entradaUsuarioElem.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') {
-        revisarPalabra();
-    }
+    if (event.key === 'Enter') revisarPalabra();
 });
 
-// --- INICIAR EL JUEGO ---
+entradaUsuarioElem.addEventListener('input', () => {
+    sonidoTic.currentTime = 0;
+    sonidoTic.play();
+});
+
+// Iniciar
+palabrasBarajadas = barajarPalabras([...palabras]);
 cargarProgreso();
 mostrarSiguientePalabra();
