@@ -192,6 +192,39 @@ botonDictado.addEventListener('click', () => {
 
   recognition.start();
 });
+
+function iniciarReconocimientoVoz() {
+  if (!('webkitSpeechRecognition' in window)) {
+    alert('Tu navegador no soporta el reconocimiento de voz.');
+    return;
+  }
+
+  const recognition = new webkitSpeechRecognition();
+  recognition.lang = 'es-ES';
+  recognition.continuous = true;
+  recognition.interimResults = false;
+
+  recognition.onresult = (event) => {
+    const resultado = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
+    entradaUsuarioElem.value = resultado;
+    revisarPalabra();
+  };
+
+  recognition.onerror = (event) => {
+    console.error('Error de reconocimiento:', event.error);
+    if (event.error === 'not-allowed') {
+      alert('Se necesita permiso para usar el micrófono.');
+    }
+  };
+
+  recognition.onend = () => {
+    // Reiniciar reconocimiento para que esté siempre activo
+    recognition.start();
+  };
+
+  recognition.start();
+}
+
 // --- Inicializar ---
 cargarProgreso();
 mostrarSiguientePalabra();
