@@ -167,6 +167,31 @@ entradaUsuarioElem.addEventListener('keydown', e => {
 });
 dificultadSelect.addEventListener('change', mostrarSiguientePalabra);
 
+const botonDictado = document.getElementById('boton-dictado');
+
+botonDictado.addEventListener('click', () => {
+  if (!('webkitSpeechRecognition' in window)) {
+    alert('Tu navegador no soporta el reconocimiento de voz.');
+    return;
+  }
+
+  const recognition = new webkitSpeechRecognition(); // Solo funciona en Chrome y Edge
+  recognition.lang = 'es-ES';
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+
+  recognition.onresult = (event) => {
+    const resultado = event.results[0][0].transcript.trim().toLowerCase();
+    entradaUsuarioElem.value = resultado;
+    revisarPalabra(); // Revisa automáticamente al hablar
+  };
+
+  recognition.onerror = (event) => {
+    console.error('Error en el reconocimiento de voz:', event.error);
+  };
+
+  recognition.start();
+});
 // --- Inicializar ---
 cargarProgreso();
 mostrarSiguientePalabra();
