@@ -1,42 +1,25 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Isabella Lee: Aventura de Palabras</title>
-    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Juego de Palabras para Isabela</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="favicon.ico" />
 </head>
 <body>
-
-    <div id="marcador">🪙 0</div>
-
-    <!-- 🔽 Nuevo: Selector de dificultad -->
-    <div id="control-dificultad">
-        <label for="nivel-dificultad">Dificultad:</label>
-        <select id="nivel-dificultad">
-            <option value="facil">Fácil</option>
-            <option value="media" selected>Media</option>
-            <option value="dificil">Difícil</option>
-        </select>
-    </div>
-
-    <div class="contenedor-principal">
-        
-        <div id="mensaje-racha"></div>
-
-        <div class="area-palabra">
-            <h1 id="palabra-actual">Cargando...</h1>
-            <button id="boton-escuchar" title="Escuchar la palabra">🔊</button>
+    <div id="contenedor">
+        <div id="marcador">🪙 0</div>
+        <h1 id="palabra-actual">palabra</h1>
+        <input type="text" id="entrada-usuario" placeholder="Escribe la palabra aquí" autocomplete="off" />
+        <div>
+            <button id="boton-revisar">✅ Revisar</button>
+            <button id="boton-escuchar">🔊 Escuchar</button>
+            <button id="boton-reiniciar">🔄 Reiniciar</button>
         </div>
-
-        <input type="text" id="entrada-usuario" placeholder="Usa el micrófono del teclado..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-        
-        <button id="boton-revisar">Revisar</button>
-
         <div id="area-feedback"></div>
+        <div id="mensaje-racha"></div>
     </div>
-
-    <button id="boton-reiniciar">Reiniciar puntaje</button>
 
     <script src="script.js"></script>
 </body>
