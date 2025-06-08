@@ -216,3 +216,7 @@ body::before {
   background-color: #0056b3;
 }
 
+#entrada-usuario {
+  display: none;
+}
+
