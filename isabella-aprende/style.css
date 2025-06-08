@@ -158,3 +158,41 @@ body::before {
 #boton-reiniciar:hover {
     opacity: 1;
 }
+
+/* --- Selector de dificultad --- */
+#control-dificultad {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background-color: #ffffff;
+    padding: 10px 15px;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    font-size: 1rem;
+    font-weight: bold;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#control-dificultad label {
+    margin: 0;
+    color: #333;
+}
+
+#nivel-dificultad {
+    font-size: 1rem;
+    padding: 5px 10px;
+    border-radius: 10px;
+    border: 2px solid #ccc;
+    background-color: #f9f9f9;
+    cursor: pointer;
+    transition: border-color 0.3s, background-color 0.3s;
+}
+
+#nivel-dificultad:hover {
+    border-color: #005a9c;
+    background-color: #e6f2ff;
+}
+
