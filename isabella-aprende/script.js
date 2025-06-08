@@ -5,8 +5,14 @@ const sonidoCorrecto = new Audio('sounds/bien.wav');
 const sonidoIncorrecto = new Audio('sounds/mal.wav');
 const sonidoRacha = new Audio('sounds/racha.wav');
 
-// --- Lista de palabras ---
-const palabras = [ /* tu lista de palabras */ ];
+const palabras = [
+  'casa', 'perro', 'gato', 'luna', 'sol', 'mesa', 'silla', 'agua',
+  'pelota', 'cometa', 'zapato', 'mochila', 'helado', 'caballo',
+  'manzana', 'fresa', 'plátano', 'naranja', 'familia', 'amigo',
+  'escuela', 'jugar', 'leer', 'escribir', 'mariposa', 'elefante',
+  'bicicleta', 'computadora', 'felicidad', 'aventura', 'cocodrilo',
+  'helicóptero', 'dinosaurio', 'hamburguesa', 'inteligente'
+];
 
 // --- Elementos del DOM ---
 const palabraActualElem   = document.getElementById('palabra-actual');
@@ -195,11 +201,11 @@ function reiniciarPuntaje() {
   }
 }
 
+// Maneja reinicio
+botonReiniciarElem.addEventListener('click', reiniciarPuntaje);
+
 // --- Inicialización ---
 entradaUsuarioElem.disabled = true;
 cargarProgreso();
 inicializarReconocimiento();
 mostrarSiguientePalabra();
-
-// Maneja reinicio
-botonReiniciarElem.addEventListener('click', reiniciarPuntaje);
