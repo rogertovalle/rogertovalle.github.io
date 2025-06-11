@@ -9,10 +9,13 @@
 </head>
 <body>
 
+  <!-- Progress bar -->
+  <div class="progress-bar"><div class="progress"></div></div>
+
   <!-- Navegación -->
   <div class="nav">
-    <button id="prev">&#10094;</button>
-    <button id="next">&#10095;</button>
+    <button id="prev" aria-label="Anterior">&#10094;</button>
+    <button id="next" aria-label="Siguiente">&#10095;</button>
   </div>
 
   <!-- Contenedor de slides -->
@@ -22,8 +25,10 @@
     <section class="slide" id="slide1">
       <img src="logo-extendido-closercat-final-black-background.png" alt="CloserCat Logo" class="logo">
       <h1>Cierra más ventas por WhatsApp<br><span class="sub">sin responder tú mismo.</span></h1>
-      <p>CloserCat Pro es tu agente autónomo de ventas. Entrenado con IA, trabaja por ti 24/7.</p>
-      <button class="cta">VER CÓMO FUNCIONA</button>
+      <p class="lead">CloserCat Pro es tu agente autónomo de ventas. Entrenado con IA, trabaja por ti <strong>24/7</strong>.</p>
+      <button class="cta" onclick="goToSlide(4)">VER DEMO</button>
+      <div class="comet comet-1"></div>
+      <div class="comet comet-2"></div>
     </section>
 
     <!-- Slide 2 -->
@@ -35,6 +40,7 @@
         <div><div class="icon seller"></div><p>Equipo saturado</p></div>
       </div>
       <p class="highlight mono">“Cada venta no cerrada es una pérdida para todos.”</p>
+      <div class="comet comet-3"></div>
     </section>
 
     <!-- Slide 3 -->
@@ -48,16 +54,17 @@
         <div class="arrow">→</div>
         <div class="after">
           <h3>Después</h3>
-          <p>CloserCat responde, califica y agenda por ti. 24/7. Sin desgaste.</p>
+          <p>CloserCat responde, califica y agenda por ti. <strong>24/7</strong>. Sin desgaste.</p>
         </div>
       </div>
+      <div class="comet comet-4"></div>
     </section>
 
     <!-- Slide 4 -->
     <section class="slide" id="slide4">
       <h2>¿Qué es CloserCat Pro?</h2>
       <p class="emphasis">“No es un chatbot. Es un closer digital.”</p>
-      <p>Tu marca. Tu tono. Tus reglas. Nuestra IA se adapta.</p>
+      <p class="lead">Tu marca. Tu tono. Tus reglas. Nuestra IA se adapta.</p>
       <div class="flow-icons">
         <div><div class="icon msg"></div><p>Lead entra</p></div>
         <div><div class="icon ia"></div><p>IA responde</p></div>
@@ -81,21 +88,27 @@
       <h2>Beneficios clave</h2>
       <div class="cards">
         <div class="card func">
+          <div class="icon-benefit"></div>
           <h3>Atención 24/7</h3>
         </div>
         <div class="card func">
-          <h3>Calificación automática</h3>
+          <div class="icon-benefit"></div>
+          <h3>Calificación auto</h3>
         </div>
         <div class="card func">
-          <h3>Seguimiento inteligente</h3>
+          <div class="icon-benefit"></div>
+          <h3>Seguimiento intel.</h3>
         </div>
         <div class="card emo">
+          <div class="icon-benefit"></div>
           <h3>Tranquilidad total</h3>
         </div>
         <div class="card emo">
+          <div class="icon-benefit"></div>
           <h3>Confianza en tu marca</h3>
         </div>
         <div class="card emo">
+          <div class="icon-benefit"></div>
           <h3>Orgullo de cerrar más</h3>
         </div>
       </div>
@@ -124,10 +137,10 @@
     <section class="slide" id="slide8">
       <h2>Casos de uso & resultados</h2>
       <div class="grid-4">
-        <div><h3>Salud</h3><p>+38% citas agendadas</p></div>
-        <div><h3>Educación</h3><p>+45% inscritos</p></div>
-        <div><h3>Retail</h3><p>+32% demos</p></div>
-        <div><h3>Servicios</h3><p>+42% conversión</p></div>
+        <div><h3>Salud</h3><p><span class="mono">+38%</span> citas</p></div>
+        <div><h3>Educación</h3><p><span class="mono">+45%</span> inscritos</p></div>
+        <div><h3>Retail</h3><p><span class="mono">+32%</span> demos</p></div>
+        <div><h3>Servicios</h3><p><span class="mono">+42%</span> conversión</p></div>
       </div>
     </section>
 
@@ -135,9 +148,9 @@
     <section class="slide" id="slide9">
       <h2>Setup & condiciones</h2>
       <ol class="setup">
-        <li>Compartes tu proceso</li>
+        <li>Compartes proceso y tono</li>
         <li>Entrenamos al agente</li>
-        <li>Activamos en 5 días</li>
+        <li>Activamos en <span class="mono">5 días</span></li>
       </ol>
       <div class="pricing">
         <div><p>Pago por resultado</p></div>
@@ -150,8 +163,9 @@
     <!-- Slide 10 -->
     <section class="slide" id="slide10">
       <h2>Activa tu closer autónomo</h2>
-      <p>“Mientras tú duermes, tu agente conversa.”</p>
+      <p class="lead">“Mientras tú duermes, tu agente conversa.”</p>
       <button class="cta">ACTIVAR DEMO</button>
+      <div class="comet comet-5"></div>
     </section>
 
   </div>
