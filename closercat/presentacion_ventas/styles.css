@@ -19,6 +19,12 @@ body, html {
   font-family: var(--fuente-texto);
 }
 
+/* Progress bar */
+.progress-bar {
+  position: fixed; top: 0; left: 0; width: 100%; height: 4px; background: rgba(255,255,255,0.1); z-index: 10;
+}
+.progress { height: 100%; width: 0; background: linear-gradient(to right, var(--azul), var(--purpura)); transition: width 0.3s; }
+
 .slides-container {
   scroll-snap-type: y mandatory;
   overflow-y: scroll;
@@ -30,32 +36,31 @@ body, html {
   width: 100%;
   height: 100vh;
   padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
   background: var(--negro);
   color: var(--blanco);
   position: relative;
+  transition: background 0.5s, color 0.5s;
 }
 
+/* Alterna fondo blanco */
 .slide:nth-child(even) { background: var(--gris); color: var(--negro); }
 
-.logo { max-width: 180px; margin-bottom: 1rem; }
+.logo { max-width: 180px; margin-bottom: 1rem; animation: fadeIn 1s ease; }
 
 h1, h2 {
-  font-family: var(--fuente-titulo);
-  text-align: center;
+  font-family: var(--fuente-titulo); text-align: center; animation: slideIn 0.8s ease;
 }
+h1 { font-size: 2.8rem; color: var(--azul); }
+h2 { font-size: 2.2rem; color: var(--violeta); margin-bottom:1rem; }
 
-h1 { font-size: 2.5rem; color: var(--azul); }
-h2 { font-size: 2rem; color: var(--violeta); margin-bottom:1rem; }
+.sub { font-size:1.3rem; display:block; margin-top:0.5rem; color: var(--blanco); }
 
-.sub { font-size:1.2rem; display:block; margin-top:0.5rem; }
+.lead { font-size:1.1rem; margin:1rem 0; }
 
 p { font-size: 1rem; text-align:center; margin:0.5rem 0; }
 
-.cta, .cta-button {
+.cta {
   background: linear-gradient(to right, var(--azul), var(--purpura));
   color: var(--blanco);
   border:none;
@@ -65,32 +70,29 @@ p { font-size: 1rem; text-align:center; margin:0.5rem 0; }
   border-radius:8px;
   cursor:pointer;
   margin-top:1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transition: transform 0.2s, opacity 0.3s;
 }
+.cta:hover { transform: translateY(-2px); opacity:0.9; }
 
 .cta.small { padding:0.5rem 1rem; font-size:0.9rem; }
 
-.icons-row {
-  display:flex; gap:2rem; margin:1rem 0;
-}
+.icons-row { display:flex; gap:2rem; margin:1rem 0; }
 .icon { width:60px; height:60px; background: var(--azul-oscuro); border-radius:12px; margin:0 auto 0.5rem; }
-.lead { /* aquí podrías insertar background-image */ }
-.chat {}
-.seller {}
+.lead { /* Replace with background-image: url('icon-lead.svg'); */ }
+.chat { /* ... */ }
+.seller { /* ... */ }
 
-.highlight { margin-top:2rem; }
+.highlight { margin-top:2rem; font-size:1.1rem; }
 .mono { font-family: var(--fuente-datos); }
 
-.compare {
-  display:flex; align-items:center; gap:1rem;
-}
-.before, .after { flex:1; padding:1rem; border-radius:8px; }
+.compare { display:flex; align-items:center; gap:1rem; }
+.before, .after { flex:1; padding:1.5rem; border-radius:12px; animation: fadeIn 1s ease; }
 .before { background: var(--gris); color: var(--negro); }
 .after { background: var(--azul); color: var(--blanco); }
-.arrow { font-size:2rem; color: var(--violeta); }
+.arrow { font-size:2.5rem; color: var(--violeta); }
 
-.flow-icons {
-  display:flex; gap:2rem; margin-top:1rem;
-}
+.flow-icons { display:flex; gap:2rem; margin-top:1rem; }
 .flow-icons .icon { background: var(--purpura); }
 
 .steps {
@@ -98,11 +100,19 @@ p { font-size: 1rem; text-align:center; margin:0.5rem 0; }
 }
 
 .cards {
-  display:grid; gap:1rem; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); margin-top:1rem;
+  display:grid; gap:1.5rem; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); margin-top:1rem;
 }
-.card { padding:1rem; border-radius:8px; text-align:center; }
+.card {
+  padding:1rem; border-radius:12px; text-align:center;
+  position: relative;
+  overflow: hidden;
+}
 .card.func { background: var(--azul-oscuro); color: var(--blanco); }
 .card.emo { background: var(--purpura); color: var(--blanco); }
+.card .icon-benefit {
+  width:40px; height:40px; margin:0 auto 0.5rem;
+  background: rgba(255,255,255,0.3); border-radius:50%; animation: float 3s ease-in-out infinite;
+}
 
 .faq { display:flex; flex-direction:column; gap:1rem; text-align:left; max-width:600px; }
 .q { font-weight:600; }
@@ -111,13 +121,11 @@ p { font-size: 1rem; text-align:center; margin:0.5rem 0; }
 .grid-4 {
   display:grid; gap:1rem; grid-template-columns: repeat(auto-fit,minmax(120px,1fr)); margin-top:1rem;
 }
-.grid-4 div { background: var(--blanco); color: var(--negro); padding:1rem; border-radius:8px; text-align:center; }
-
-.setup {
-  list-style: decimal inside;
-  font-size:1rem;
-  margin:1rem 0;
+.grid-4 div {
+  background: var(--blanco); color: var(--negro); padding:1rem; border-radius:8px; text-align:center;
 }
+
+.setup { list-style: decimal inside; font-size:1rem; margin:1rem 0; }
 .pricing {
   display:flex; gap:1rem; margin:1rem 0;
 }
@@ -128,9 +136,41 @@ p { font-size: 1rem; text-align:center; margin:0.5rem 0; }
 
 .nav {
   position: fixed; top: 50%; width: 100%; display: flex; justify-content: space-between;
-  pointer-events: none;
+  pointer-events: none; z-index: 5;
 }
 .nav button {
-  background: rgba(0,0,0,0.3); border:none; color:#fff;
+  background: rgba(0,0,0,0.4); border:none; color:#fff;
   font-size:2rem; padding:0.5rem; cursor:pointer; pointer-events: all;
+  border-radius:50%;
+  transition: background 0.3s;
+}
+.nav button:hover { background: rgba(0,0,0,0.7); }
+
+/* COMETAS ANIMADAS */
+.comet {
+  position: absolute; width: 8px; height: 8px; border-radius:50%; background: var(--blanco);
+  box-shadow: 0 0 6px var(--blanco);
+  animation: shoot 2s linear infinite;
+}
+.comet-1 { top: 20%; left: 10%; animation-delay: 0s; }
+.comet-2 { top: 30%; left: 80%; animation-delay: 1s; }
+.comet-3 { top: 60%; left: 20%; animation-delay: 0.5s; }
+.comet-4 { top: 75%; left: 60%; animation-delay: 1.5s; }
+.comet-5 { top: 40%; left: 50%; animation-delay: 2s; }
+
+@keyframes shoot {
+  0% { opacity:1; transform: translate(0,0) scale(1); }
+  100% { opacity:0; transform: translate(200px,200px) scale(0.5); }
+}
+@keyframes fadeIn {
+  from { opacity:0; }
+  to { opacity:1; }
+}
+@keyframes slideIn {
+  from { transform: translateY(-20px); opacity:0; }
+  to { transform: translateY(0); opacity:1; }
+}
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
 }
