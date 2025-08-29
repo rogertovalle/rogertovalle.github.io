@@ -24,6 +24,21 @@
       </select>
     </div>
 
+    <!-- Botón iniciar juego/micrófono -->
+    <div id="contenedor-iniciar">
+      <button id="boton-iniciar" title="Iniciar juego y micrófono">▶️ Iniciar</button>
+    </div>
+
+    <!-- Gestión de listado de palabras -->
+    <div id="gestor-palabras">
+      <label for="entrada-palabras"><strong>Listado de palabras (separadas por comas o líneas):</strong></label>
+      <textarea id="entrada-palabras" rows="3" placeholder="ej: dinosaurio, unicornio, computadora"></textarea>
+      <div class="acciones-palabras">
+        <button id="boton-limpiar-personalizadas" title="Restablecer listado precargado">↩️ Restablecer listado</button>
+      </div>
+      <div id="resumen-palabras"></div>
+    </div>
+
     <!-- Mensaje de racha -->
     <div id="mensaje-racha"></div>
 
