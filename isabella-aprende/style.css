@@ -67,6 +67,9 @@ body::before {
 /* Selector dificultad */
 #selector-dificultad {
   margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 #selector-dificultad label {
   font-weight: bold;
@@ -84,6 +87,14 @@ body::before {
 #selector-dificultad select:hover {
   border-color: #005a9c;
   background-color: #e6f2ff;
+}
+
+/* Logo */
+#logo-app {
+  height: 32px;
+  width: auto;
+  object-fit: contain;
+  flex: 0 0 auto;
 }
 
 /* Botón iniciar */
