@@ -76,7 +76,9 @@ class BranchManager {
             fromTurn: fromTurn,
             parentBranch: this.currentBranch,
             context: this.deriveContextForBranch(branchType),
-            baseType: branchType
+            baseType: branchType,
+            // Estado mutable por rama (contadores, flags, etc.)
+            state: { priceObjectionCount: 0, altTacticApplied: false, budget_monthly: null }
         };
         
         // Cambiar a la nueva rama
@@ -147,8 +149,42 @@ class BranchManager {
                 if (branch.messages[idx]) {
                     const textElement = node.querySelector('.message-text');
                     const metaElement = node.querySelector('.message-meta');
+                    // Loop guard avanzado: cambiar táctica si hay objeción de precio repetida
+                    try {
+                        const isAssistant = !node.classList.contains('user');
+                        if (isAssistant && branch.baseType === 'objection' && branch.state && branch.state.priceObjectionCount > 1 && !branch.state.altTacticApplied) {
+                            // Tras reordenar, el turno 12 es la propuesta de piloto; sustituimos por táctica alternativa
+                            if (turnNum === 12) {
+                                branch.messages[idx].text = '"Para ajustar a tu presupuesto, podemos: 1) reducir el alcance inicial a módulos críticos y escalar luego, o 2) ofrecer financiamiento con facturación anual/en tramos. ¿Cuál prefieres?"';
+                                branch.messages[idx].modified = true;
+                                branch.messages[idx].meta = 'Cambio de táctica por loop guard (alternativa a piloto)';
+                                const existing = Array.isArray(branch.messages[idx].badges) ? branch.messages[idx].badges : [];
+                                if (!existing.includes('loop')) existing.push('loop');
+                                branch.messages[idx].badges = existing;
+                                branch.state.altTacticApplied = true;
+                            }
+                        }
+                    } catch (_) { /* noop */ }
+
                     if (textElement) textElement.textContent = branch.messages[idx].text;
                     if (metaElement && branch.messages[idx].meta) metaElement.textContent = branch.messages[idx].meta;
+                    // Render opcional de timeline cuando hay badge 'timing' o meta con 'Timing:'
+                    try {
+                        const msg = branch.messages[idx] || {};
+                        const hasTimingBadge = Array.isArray(msg.badges) && msg.badges.includes('timing');
+                        const timingText = (msg.meta || '').includes('Timing:') ? msg.meta : '';
+                        const bubble = node.querySelector('.message-bubble');
+                        if (bubble) {
+                            const existing = bubble.querySelector('.timing-hint');
+                            if (existing) existing.remove();
+                            if (hasTimingBadge || timingText) {
+                                const hint = document.createElement('div');
+                                hint.className = 'timing-hint';
+                                hint.textContent = timingText ? timingText : 'Timing: before_gov + governance + persist';
+                                bubble.appendChild(hint);
+                            }
+                        }
+                    } catch (_) { /* noop */ }
                     // Captura de email opcional (si el usuario lo provee en el texto)
                     try {
                         if (node.classList.contains('user')) {
@@ -176,6 +212,35 @@ class BranchManager {
                                     }
                                 }
                             }
+
+                            // Captura de presupuesto mensual (budget) desde mensajes del usuario
+                            try {
+                                // patrones: "$15,000", "$15k", "15k", "15 mil", seguido de palabras como mensual/mes opcional
+                                const budgetRegex = /\$?\s*(\d{1,3}(?:[.,]\d{3})+|\d+(?:[.,]\d+)?)(\s*k|\s*mil)?/i;
+                                const match = msgText.match(budgetRegex);
+                                if (match) {
+                                    let raw = match[1].replace(/\./g, '').replace(/,/g, '');
+                                    let value = parseFloat(raw);
+                                    const suffix = (match[2] || '').trim().toLowerCase();
+                                    if (suffix === 'k' || suffix === 'mil') {
+                                        value = value * 1000;
+                                    }
+                                    if (!isNaN(value) && value > 0) {
+                                        branch.state.budget_monthly = value;
+                                        branch.context = branch.context || {};
+                                        branch.context.budget_monthly = value;
+                                    }
+                                }
+                            } catch (_) { /* noop */ }
+
+                            // Contar objeción de precio (palabras clave)
+                            try {
+                                const lower = msgText.toLowerCase();
+                                const isPriceObjection = /caro|costoso|muy caro|precio alto/.test(lower);
+                                if (isPriceObjection) {
+                                    branch.state.priceObjectionCount = (branch.state.priceObjectionCount || 0) + 1;
+                                }
+                            } catch (_) { /* noop */ }
                         }
                     } catch (e) { /* ignore */ }
                     if (branch.messages[idx].modified) node.classList.add('branch-modified');
@@ -239,6 +304,14 @@ class BranchManager {
         if (b === 'compliance') return '🔐 Compliance';
         if (b === 'email') return '✉️ Email';
         if (b === 'email_invalid') return '⚠️ Email inválido';
+        if (b === 'timing') return '⏱️ Timing';
+        if (b === 'requires_actions') return '🔗 Requires_Actions';
+        if (b === 'predictive') return '🔮 Predictivo';
+        if (b === 'prefetch') return '⚙️ Prefetch';
+        if (b === 'phase_transition') return '🧭 Transición de Fase';
+        if (b && /^phase\(/.test(b)) return '🧩 Fase ' + b.replace('phase(','').replace(')','');
+        if (b === 'multicanal') return '🔁 Multicanal';
+        if (b === 'vip') return '👑 VIP';
         if (b.startsWith('language(')) return '🌍 ' + b.replace('language(','').replace(')','').toUpperCase();
         if (b === 'priority_high') return '⚠️ Alta';
         return b;
@@ -270,9 +343,19 @@ class BranchManager {
         const fields = [
             { key: 'methodology', label: '', map: { BANT: 'BANT', MEDDIC: 'MEDDIC', CONSULTATIVE: 'Consultative' } },
             { key: 'language', label: '', map: { es: 'ES', en: 'EN' } },
-            { key: 'currency', label: '', map: { MXN: 'MXN', USD: 'USD' } },
+            { key: 'currency', label: '', map: { MXN: 'MXN', USD: 'USD', COP: 'COP' } },
             { key: 'contact_email', label: 'email', map: {} }
         ];
+        // Chip de presupuesto si existe
+        if (typeof br.context.budget_monthly === 'number') {
+            const cur = br.context.currency || 'USD';
+            const fmt = new Intl.NumberFormat('es-ES');
+            const val = fmt.format(br.context.budget_monthly);
+            const chip = document.createElement('span');
+            chip.className = 'context-chip';
+            chip.textContent = `presupuesto: ${cur} ${val}/mes`;
+            el.appendChild(chip);
+        }
         fields.forEach(f => {
             const val = br.context[f.key];
             if (!val) return;
@@ -294,6 +377,7 @@ class BranchManager {
     getContextOverride(branchType) {
         if (branchType === 'enterprise') return { methodology: 'MEDDIC' };
         if (branchType === 'language_en') return { language: 'en', currency: 'USD' };
+        if (branchType === 'brand_premium') return { brand_id: 5, methodology: 'CONSULTATIVE' };
         return {};
     }
     
@@ -626,15 +710,38 @@ class BranchManager {
             'objection': {
                 name: 'Rechazo Directo',
                 metrics: {
-                    conversion: '25%',
-                    time: '12.8min',
-                    guidelines: '18',
-                    outcome: '❌ No interés'
+                    conversion: '55%',
+                    time: '12.0min',
+                    guidelines: '22',
+                    outcome: '⏳ Follow-up'
                 },
                 changes: {
-                    3: { text: '"No me interesa, gracias"', modified: true, badges: ['objection'], meta: 'Rechazo directo' },
-                    4: { text: '"Entiendo. ¿Puedo preguntarte qué te hace pensar eso? Quizás hay algo específico que te preocupa"', modified: true, badges: ['reframe'], meta: 'Reencuadre de valor (Guideline: reframe)' },
-                    10: { text: '"Para ayudarte a decidir, podemos hacer un piloto de 7 días y ver el ROI real con tus datos"', modified: true, badges: ['loop'], meta: 'Cálculo ROI + Estrategia piloto (relations)' }
+                    // [0] Usuario rechaza
+                    3: { text: '"No me interesa, gracias"', modified: true, badges: ['objection','checkpoint'], meta: 'Rechazo directo + Checkpoint(hard_objection)' },
+                    // [1] Reencuadre breve
+                    4: { text: '"Entiendo. ¿Qué te hace pensarlo? ¿Precio, tiempos o integración?"', modified: true, badges: ['reframe','checkpoint'], meta: 'Reencuadre breve + Checkpoint(asked_reason)' },
+                    // [2] Usuario explicita razón (precio)
+                    5: { text: '"Principalmente por el precio"', modified: true, meta: 'Razón de objeción capturada' },
+                    // [3] Asistente pide presupuesto
+                    6: { text: '"¿Manejas un presupuesto mensual aproximado para esto?"', modified: true, badges: ['icp','checkpoint'], meta: 'Solicitud de presupuesto + Checkpoint(budget_request)' },
+                    // [4] Usuario indica budget
+                    7: { text: '"Tengo unos $15,000 mensuales disponibles"', modified: true, badges: ['icp'], meta: 'Resume checkpoint + ICP validation' },
+                    // [5] Pricing con cálculo y descuento
+                    8: { text: '"Perfecto. El plan para 30 usuarios es $12,000. Con tu volumen tienes 15% de descuento: $10,200"', modified: true, badges: ['calculations','checkpoint'], meta: 'Calculations (inline + registry) + quote_shown' },
+                    // [6] Usuario pregunta beneficios
+                    9: { text: '"¿Qué beneficios ofrece?"', modified: true, meta: 'Relación PRECEDES' },
+                    // [7] Beneficios alineados a marca
+                    10: { text: '"Nuestro software te ayuda a: automatizar facturación, control de inventario, reportes en tiempo real..."', modified: true, badges: ['brand_override'], meta: 'Beneficios alineados a marca' },
+                    // [8] Objeción de precio
+                    11: { text: '"Hmm, me parece un poco caro..."', modified: true, badges: ['loop'], meta: 'Objeción de precio detectada' },
+                    // [9] Estrategia piloto + ROI (o táctica alternativa por loop guard)
+                    12: { text: '"Para ayudarte a decidir, podemos hacer un piloto de 7 días y ver el ROI real con tus datos"', modified: true, badges: ['loop','relations'], meta: 'Cálculo ROI + Estrategia piloto (relations)' },
+                    // [10] Usuario valida presupuesto contra oferta
+                    13: { text: '"¿Esto entra en mi presupuesto que mencioné?"', modified: true, meta: 'State lookup' },
+                    // [11] Confirmación de encaje con presupuesto y CTA
+                    14: { text: '"Sí, con tu presupuesto de $15k/mes es viable. ¿Te gustaría una demo?"', modified: true, badges: ['checkpoint'], meta: 'Loop detection + budget_fit' },
+                    // [12] Cierre
+                    15: { text: '"Sí, me gustaría agendar una demo"', modified: true, meta: 'Cierre exitoso ✅' }
                 }
             },
             'loop': {
@@ -691,6 +798,48 @@ class BranchManager {
                     8: { text: '"Podemos ofrecer 10% de descuento si eliges facturación anual"', modified: true },
                     10: { text: '"Con el descuento anual, tu ROI mejora a 95% en el primer año"', modified: true }
                 }
+            },
+            // Multicanal básico: WhatsApp → Email
+            'channel_switch': {
+                name: 'Cambio de Canal (WA → Email)',
+                metrics: { conversion: '92%', time: '11.0min', guidelines: '18', outcome: '✅ Demo' },
+                changes: {
+                    8: { text: '"Envíame la cotización por email a juan@empresa.com"', modified: true, badges: ['email','multicanal'], meta: 'Detección cambio de canal' },
+                    9: { text: '"Perfecto, te envié el detalle por email y aquí te dejo el resumen corto"', modified: true, badges: ['multicanal'], meta: 'Estado compartido cross-channel' },
+                    10: { text: '"📧 Email enviado\n\nAsunto: Cotización CRM Pro\n\nEstimado Juan,\nAdjunto cotización: $10,200/mes (15% desc.). Beneficios: facturación, inventario, reportes. ROI 82%.\n\nSaludos,\nAsistente"', modified: true, badges: ['email'], meta: 'Template diferenciado por canal (email)'}
+                }
+            },
+            // Predictivo
+            'predictive': {
+                name: 'Sistema Predictivo',
+                metrics: { conversion: '88%', time: '10.2min', guidelines: '19', outcome: '⏳ Follow-up' },
+                changes: {
+                    9: { text: '"🔮 Probabilidad 78% de que preguntes por beneficios; prefetch features y FAQs"', modified: true, badges: ['predictive','prefetch'], meta: 'Prefetch reduce latencia -35% en próximo turno' }
+                }
+            },
+            // Fase salteable
+            'phase_skip': {
+                name: 'Fase Salteable',
+                metrics: { conversion: '93%', time: '9.8min', guidelines: '16', outcome: '✅ Demo' },
+                changes: {
+                    5: { text: '"BANT completeness: 85% → qualification saltada → prospection → presentation"', modified: true, badges: ['phase_transition'], meta: 'Fase qualification saltada (req <80%)' }
+                }
+            },
+            // Panel de emociones
+            'emotions': {
+                name: 'Análisis Emocional',
+                metrics: { conversion: '80%', time: '11.5min', guidelines: '20', outcome: '⏳ Follow-up' },
+                changes: {
+                    11: { text: '"🧠 Polaridad=-0.4 | Emoción: preocupación | Signal: resistance → guideline reframe_value"', modified: true, badges: ['emotions','intelligence'], meta: 'AFINN/NRC rápidos + gating DISC' }
+                }
+            },
+            // Marca Premium VIP
+            'brand_premium': {
+                name: 'Marca Premium (VIP)',
+                metrics: { conversion: '90%', time: '10.0min', guidelines: '18', outcome: '✅ Demo' },
+                changes: {
+                    4: { text: '"Detectamos que calificas para servicio VIP. Asigno gerente dedicado y soporte 24/7"', modified: true, badges: ['brand_override','vip'], meta: 'VIP concierge (brand_id=5)'}
+                }
             }
         };
         
@@ -702,7 +851,9 @@ class BranchManager {
         if (branchId === 'main') {
             return {
                 3: [ { type: 'objection', label: '❌ "No me interesa"', title: 'Rechazo directo' }, { type: 'enterprise', label: '🏢 "Somos 500 empleados"', title: 'Empresa grande' } ],
-                5: [ { type: 'low_budget', label: '💰 "Solo tengo $3,000"', title: 'Presupuesto insuficiente' } ],
+                5: [ { type: 'low_budget', label: '💰 "Solo tengo $3,000"', title: 'Presupuesto insuficiente' }, { type: 'phase_skip', label: '⏭️ "Saltar qualification"', title: 'Fase salteable' } ],
+                6: [ { type: 'channel_switch', label: '🔁 "Envíame por email"', title: 'Cambio WhatsApp→Email' }, { type: 'predictive', label: '🔮 "Mostrar predictivo"', title: 'Sistema predictivo' }, { type: 'brand_premium', label: '👑 "VIP premium"', title: 'Marca premium' } ],
+                11: [ { type: 'emotions', label: '🧠 "Analizar emoción"', title: 'Panel emocional' } ]
             };
         }
         // Opciones derivadas por rama
@@ -991,6 +1142,33 @@ class BranchManager {
                         metrics: { conversion: '100%', time: '10.5min', guidelines: '15', outcome: '✅ Demo' }
                     };
                 }
+                // Migración no destructiva: añadir badges/meta nuevos desde plantilla actual
+                try {
+                    const template = this.getMainMessages();
+                    const main = this.branches['main'];
+                    if (main && Array.isArray(main.messages) && Array.isArray(template)) {
+                        for (let i = 0; i < Math.min(main.messages.length, template.length); i++) {
+                            const savedMsg = main.messages[i] || {};
+                            const tplMsg = template[i] || {};
+                            // Añadir badges si la versión guardada no los tiene
+                            if (!Array.isArray(savedMsg.badges) && Array.isArray(tplMsg.badges)) {
+                                savedMsg.badges = tplMsg.badges.slice();
+                            }
+                            // Garantizar timing/meta en turno 6 (idx 5)
+                            if (i === 5) {
+                                const hasTimingBadge = Array.isArray(savedMsg.badges) && savedMsg.badges.includes('timing');
+                                if (!hasTimingBadge) {
+                                    savedMsg.badges = Array.isArray(savedMsg.badges) ? savedMsg.badges : [];
+                                    savedMsg.badges.push('timing');
+                                }
+                                if (typeof savedMsg.meta !== 'string' || !savedMsg.meta.includes('Timing:')) {
+                                    savedMsg.meta = tplMsg.meta || 'Timing: before_gov(100ms)+gov(800ms)+persist(50ms)=950ms';
+                                }
+                            }
+                            main.messages[i] = savedMsg;
+                        }
+                    }
+                } catch (_) { /* ignore migration errors */ }
                 // Migración de contexto (si falta)
                 Object.keys(this.branches).forEach((id) => {
                     if (!this.branches[id].context) {
@@ -1015,6 +1193,11 @@ class BranchManager {
         if (branchId.startsWith('objection')) return 'objection';
         if (branchId.startsWith('compliance')) return 'compliance';
         if (branchId.startsWith('reframe')) return 'reframe';
+        if (branchId.startsWith('channel_switch')) return 'channel';
+        if (branchId.startsWith('predictive')) return 'predictive';
+        if (branchId.startsWith('phase_skip')) return 'phase_skip';
+        if (branchId.startsWith('emotions')) return 'emotions';
+        if (branchId.startsWith('brand_premium')) return 'brand_premium';
         return 'main';
     }
     
@@ -1041,19 +1224,19 @@ class BranchManager {
     
     getMainMessages() {
         return [
-            { text: "Hola, quisiera información sobre sus soluciones", meta: "Matching básico + Captura de intent" },
-            { text: "¡Hola Juan! Encantado de ayudarte. ¿Cuántos empleados tiene tu empresa?", meta: "Detección metodología BANT" },
-            { text: "Somos 30 empleados. ¿Cuánto cuesta?", meta: "ICP Actions + Condiciones JSONPath" },
-            { text: "Para calcular el mejor precio, ¿cuál es tu presupuesto mensual aproximado?", meta: "Checkpoint creado (falta dato)" },
-            { text: "Tengo unos $15,000 mensuales disponibles", meta: "Resume checkpoint + ICP validation" },
-            { text: "Perfecto. El plan para 30 usuarios es $12,000. Con tu volumen tienes 15% descuento: $10,200", meta: "Calculations (inline + registry)" },
-            { text: "¿Qué beneficios ofrece?", meta: "Relación PRECEDES" },
-            { text: "Nuestro software te ayuda a: automatizar facturación, control de inventario, reportes en tiempo real...", meta: "Brand override" },
-            { text: "Hmm, me parece un poco caro...", meta: "Matching semántico" },
-            { text: "Te ahorrarás $2,500/mes en tiempo. Tu ROI es 82% en el primer año", meta: "Cálculo ROI" },
-            { text: "¿Esto entra en mi presupuesto que mencioné?", meta: "State lookup" },
-            { text: "Sí, con tu presupuesto de $15k/mes es viable. ¿Te gustaría una demo?", meta: "Loop detection" },
-            { text: "Sí, me gustaría agendar una demo", meta: "Cierre exitoso ✅" }
+            { text: "Hola, quisiera información sobre sus soluciones", meta: "Matching básico + Captura de intent", badges: ['phase(prospection)'] },
+            { text: "¡Hola Juan! Encantado de ayudarte. ¿Cuántos empleados tiene tu empresa?", meta: "Detección metodología BANT", badges: ['phase(prospection)'] },
+            { text: "Somos 30 empleados. ¿Cuánto cuesta?", meta: "ICP Actions + Condiciones JSONPath", badges: ['phase(prospection)'] },
+            { text: "Para calcular el mejor precio, ¿cuál es tu presupuesto mensual aproximado?", meta: "Checkpoint creado (falta dato)", badges: ['checkpoint','phase(prospection)'] },
+            { text: "Tengo unos $15,000 mensuales disponibles", meta: "Resume checkpoint + ICP validation", badges: ['icp'] },
+            { text: "Perfecto. El plan para 30 usuarios es $12,000. Con tu volumen tienes 15% descuento: $10,200", meta: "Timing: before_gov(100ms)+gov(800ms)+persist(50ms)=950ms | requires_actions: fetch_exchange_rate(completed)", badges: ['calculations','timing','requires_actions','phase(presentation)'] },
+            { text: "¿Qué beneficios ofrece?", meta: "Relación PRECEDES", badges: [] },
+            { text: "Nuestro software te ayuda a: automatizar facturación, control de inventario, reportes en tiempo real...", meta: "Brand override", badges: [] },
+            { text: "Hmm, me parece un poco caro...", meta: "Matching semántico", badges: [] },
+            { text: "Te ahorrarás $2,500/mes en tiempo. Tu ROI es 82% en el primer año", meta: "Cálculo ROI", badges: [] },
+            { text: "¿Esto entra en mi presupuesto que mencioné?", meta: "State lookup", badges: [] },
+            { text: "Sí, con tu presupuesto de $15k/mes es viable. ¿Te gustaría una demo?", meta: "Loop detection", badges: [] },
+            { text: "Sí, me gustaría agendar una demo", meta: "Cierre exitoso ✅", badges: [] }
         ];
     }
 }
@@ -1326,6 +1509,11 @@ const branchStyles = `
 .conversation-chat[data-theme="objection"] .message-bubble { border-left: 4px solid #E53E3E; }
 .conversation-chat[data-theme="compliance"] .message-bubble { border-left: 4px solid #2B6CB0; }
 .conversation-chat[data-theme="reframe"] .message-bubble { border-left: 4px solid #38A169; }
+.conversation-chat[data-theme="channel"] .message-bubble { border-left: 4px solid #319795; }
+.conversation-chat[data-theme="predictive"] .message-bubble { border-left: 4px solid #805AD5; }
+.conversation-chat[data-theme="phase_skip"] .message-bubble { border-left: 4px solid #DD6B20; }
+.conversation-chat[data-theme="emotions"] .message-bubble { border-left: 4px solid #D69E2E; }
+.conversation-chat[data-theme="brand_premium"] .message-bubble { border-left: 4px solid #9F7AEA; }
 
 /* Marcador sutil del fromTurn */
 .chat-message.from-turn .message-bubble {
@@ -1350,6 +1538,19 @@ const branchStyles = `
 .pre-branch-dim {
     opacity: 0.5;
     filter: grayscale(0.2);
+}
+
+/* Timing hint (timeline visual) */
+.timing-hint {
+    font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+    border-left: 3px dotted #718096;
+    background: #f7fafc;
+    padding: 6px 8px;
+    margin-top: 6px;
+    font-size: 11px;
+    color: #2d3748;
+    border-radius: 4px;
+    line-height: 1.4;
 }
 
 /* Colores de tendencia */
