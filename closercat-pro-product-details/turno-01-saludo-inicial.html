@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turno 1: Saludo Inicial - Ejemplo Conversacional</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({ startOnLoad: true, theme: 'default' });</script>
+</head>
+<body>
+    <header>
+        <h1>💬 Turno 1: Saludo Inicial</h1>
+        <div class="subtitle">Matching Básico y Captura de Intent</div>
+        <div class="breadcrumb">
+            <a href="../index.html">← Índice principal</a> | 
+            <a href="index.html">← Timeline conversación</a>
+        </div>
+    </header>
+
+    <div class="container">
+        
+        <section>
+            <h2>📱 Mensaje del Usuario</h2>
+            <div class="message-box user">
+                <span class="turn-badge user">👤 Usuario - Juan Pérez</span>
+                <p style="font-size: 1.1em; margin-top: 10px;"><strong>"Hola, quisiera información sobre sus soluciones"</strong></p>
+                <p style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                    <strong>Canal:</strong> WhatsApp<br>
+                    <strong>Timestamp:</strong> 2025-10-06 10:00:00<br>
+                    <strong>Brand ID:</strong> 1
+                </p>
+            </div>
+        </section>
+
+        <section>
+            <h2>📊 Estado del Sistema ANTES del Turno</h2>
+            <div class="state-box before">
+                <h4>SalesState Inicial</h4>
+                <div class="json-viewer">
+<pre>{
+  "brand_id": "1",
+  "current_phase": "prospection",
+  "metodologia": null,
+  "canal": "whatsapp",
+  "user_identity": {
+    "known_user": false,
+    "email": null,
+    "name": null
+  },
+  "conversation_history": [],
+  "message_count": 0,
+  "bant_state": {
+    "budget": null,
+    "authority": null,
+    "need": null,
+    "timeline": null
+  },
+  "conversation_progress": 0.0
+}</pre>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>⚙️ Procesamiento del Sistema</h2>
+
+            <h3>Diagrama de Secuencia</h3>
+            <div class="mermaid">
+sequenceDiagram
+    participant U as Usuario
+    participant SA as SalesAgent
+    participant GI as GovernanceInput Adapter
+    participant GE as GuidelineEngine
+    participant DB as Database
+    participant AM as ActionMapper
+
+    U->>SA: "Hola, quisiera información..."
+    SA->>SA: Actualizar SalesState
+    SA->>GI: Adaptar a GovernanceInput
+    
+    GI->>GI: Detectar fase: prospection
+    GI->>GI: Canal: whatsapp
+    GI->>GI: Clasificar tipo: info_request
+    GI-->>SA: GovernanceInput ready
+    
+    SA->>GE: match(input, brand_id="1")
+    
+    rect rgb(200, 220, 255)
+        Note over GE,DB: QUERY INICIAL
+        GE->>DB: SELECT WHERE brand_id=1<br/>AND fase='prospection'<br/>AND canal='whatsapp'
+        DB-->>GE: 87 candidatos
+    end
+    
+    rect rgb(220, 255, 220)
+        Note over GE: FILTRADO DETERMINÍSTICO
+        GE->>GE: Filter tipo_input='info_request'
+        Note over GE: Candidatos: 23
+    end
+    
+    rect rgb(255, 240, 220)
+        Note over GE: MATCHING SEMÁNTICO
+        GE->>GE: Calculate embedding
+        GE->>GE: Cosine similarity > 0.65
+        Note over GE: Candidatos: 5
+    end
+    
+    rect rgb(255, 220, 255)
+        Note over GE: SELECCIÓN FINAL
+        GE->>GE: Sort by prioridad_efectiva
+        GE->>GE: Select top: GL_PROSP_WELCOME_PRI60_V1
+    end
+    
+    GE->>AM: map_actions(guideline)
+    AM-->>GE: icp_actions: [capture_intent]
+    
+    GE-->>SA: GuidelineEngineOutput
+    SA->>SA: Ejecutar ICP Actions
+    SA->>U: "¡Hola Juan! Encantado de ayudarte..."
+            </div>
+
+            <h3>Paso 1: Adaptación a GovernanceInput</h3>
+            <div class="component-card">
+                <pre><code class="language-python"># GovernanceInputAdapter
+governance_input = GovernanceInput(
+    brand_id="1",
+    fase="prospection",  # Detectado: inicio de conversación
+    metodologia=None,  # Aún no detectado
+    canal="whatsapp",
+    user_message="Hola, quisiera información sobre sus soluciones",
+    tipo_input="info_request",  # Clasificado automáticamente
+    sales_state=current_sales_state
+)</code></pre>
+            </div>
+
+            <h3>Paso 2: Query Inicial a Base de Datos</h3>
+            <div class="component-card">
+                <pre><code class="language-sql">SELECT g.*, o.prioridad_global
+FROM guideline g
+JOIN objective o ON g.objetivo_id = o.id
+WHERE g.brand_id = '1'
+  AND g.fase = 'prospection'
+  AND g.canal = 'whatsapp'
+  AND g.activa = TRUE
+  AND o.activa = TRUE
+ORDER BY g.prioridad_efectiva DESC
+LIMIT 100;
+
+-- Resultado: 87 guidelines candidatos</code></pre>
+            </div>
+
+            <h3>Paso 3: Guidelines Evaluados</h3>
+            <div class="component-card">
+                <h4>Top 5 Candidatos (después de filtros)</h4>
+                
+                <div class="guideline-card selected">
+                    <h4>✅ GL_PROSP_WELCOME_PRI60_V1 <span class="badge badge-success">SELECCIONADO</span></h4>
+                    <p><strong>Descripción:</strong> Saludo inicial y captura de intención del prospecto</p>
+                    <p><strong>Prioridad Efectiva:</strong> 70,060</p>
+                    <p><strong>Similarity Score:</strong> 0.89</p>
+                    <div class="score-bar">
+                        <div class="score-fill" style="width: 89%;"></div>
+                    </div>
+                    <p><strong>Razón de selección:</strong> Mayor prioridad + alta similitud semántica</p>
+                </div>
+
+                <div class="guideline-card rejected">
+                    <h4>GL_PROSP_INFO_GENERAL_PRI50_V1</h4>
+                    <p><strong>Prioridad Efectiva:</strong> 70,050</p>
+                    <p><strong>Similarity Score:</strong> 0.75</p>
+                    <div class="score-bar">
+                        <div class="score-fill" style="width: 75%;"></div>
+                    </div>
+                    <p><strong>Razón de rechazo:</strong> Menor prioridad que el seleccionado</p>
+                </div>
+
+                <div class="guideline-card rejected">
+                    <h4>GL_PROSP_FAQ_SHOW_PRI40_V1</h4>
+                    <p><strong>Prioridad Efectiva:</strong> 70,040</p>
+                    <p><strong>Similarity Score:</strong> 0.71</p>
+                    <div class="score-bar">
+                        <div class="score-fill" style="width: 71%;"></div>
+                    </div>
+                    <p><strong>Razón de rechazo:</strong> Menor prioridad + menor similitud</p>
+                </div>
+            </div>
+
+            <h3>Paso 4: Guideline Seleccionado - Detalle Completo</h3>
+            <div class="component-card">
+                <div class="json-viewer">
+<pre>{
+  "id": "GL_PROSP_WELCOME_PRI60_V1",
+  "objetivo_id": "OBJ_REL_FIRST_CONTACT_V1",
+  "descripcion": "Saludo inicial y captura de intención",
+  "directiva": "Saluda de forma amigable. Identifica rápidamente qué busca el prospecto. Captura el nombre si lo menciona.",
+  "fase": "prospection",
+  "metodologia": null,
+  "canal": "whatsapp",
+  "tipo_input": "info_request",
+  "condiciones": [],  // Sin condiciones específicas
+  "accion": {
+    "icp_actions": [
+      {
+        "action": "capture_field",
+        "field": "lead_intent",
+        "extractor": "spacy_intent",
+        "sync_to": "lead_state.intent",
+        "validator": {
+          "type": "in_list",
+          "values": ["info_request", "price_inquiry", "demo_request"]
+        }
+      },
+      {
+        "action": "capture_field",
+        "field": "name",
+        "extractor": "spacy_person",
+        "normalizer": ["trim", "capitalize"],
+        "sync_to": "user_identity.name",
+        "optional": true
+      }
+    ]
+  },
+  "prioridad_local": 60,
+  "prioridad_efectiva": 70060,
+  "criticidad": "recommended",
+  "timing": "setup",
+  "proposito": "discovery",
+  "activa": true
+}</pre>
+                </div>
+            </div>
+
+            <h3>Paso 5: Ejecución de ICP Actions</h3>
+            <div class="component-card">
+                <h4>ICP Action 1: Captura de Intent</h4>
+                <pre><code class="language-python"># IcpActionExecutor
+result = icp_executor.execute_icp_actions(
+    actions=guideline.accion.icp_actions,
+    sales_state=sales_state
+)
+
+# Extracción con spacy
+intent = spacy_intent_extractor.extract("quisiera información sobre sus soluciones")
+# Resultado: "info_request"
+
+# Validación
+is_valid = validator.validate(intent, values=["info_request", "price_inquiry", "demo_request"])
+# Resultado: True
+
+# Sincronización
+sales_state["lead_state"]["intent"] = "info_request"
+sales_state["lead_state"]["intent_provenance"] = {
+    "source": "spacy",
+    "confidence": 0.85
+}</code></pre>
+
+                <h4>ICP Action 2: Captura de Nombre</h4>
+                <pre><code class="language-python"># Extracción opcional de nombre
+name = spacy_person_extractor.extract("Hola, quisiera información...")
+# Resultado: None (no hay nombre en este mensaje)
+
+# Como es opcional, no se crea checkpoint
+# Continuamos sin este dato</code></pre>
+            </div>
+        </section>
+
+        <section>
+            <h2>📊 Estado del Sistema DESPUÉS del Turno</h2>
+            
+            <div class="state-comparison">
+                <div class="state-box before">
+                    <h4>❌ Antes</h4>
+                    <div class="json-viewer">
+<pre>{
+  "current_phase": "prospection",
+  "metodologia": null,
+  "user_identity": {
+    "known_user": false,
+    "name": null
+  },
+  "lead_state": {
+    "intent": null
+  },
+  "message_count": 0
+}</pre>
+                    </div>
+                </div>
+
+                <div class="state-box after">
+                    <h4>✅ Después</h4>
+                    <div class="json-viewer">
+<pre>{
+  "current_phase": "prospection",
+  "metodologia": null,
+  "user_identity": {
+    "known_user": false,
+    "name": null
+  },
+  "lead_state": {
+    "intent": <span class="highlight-change">"info_request"</span>,
+    "intent_provenance": {
+      "source": "spacy",
+      "confidence": 0.85
+    }
+  },
+  "message_count": <span class="highlight-change">1</span>,
+  "last_guideline_used": <span class="highlight-change">"GL_PROSP_WELCOME_PRI60_V1"</span>
+}</pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="state-diff">
+                <h4>🔄 Cambios Detectados</h4>
+                <ul>
+                    <li><strong>lead_state.intent:</strong> null → "info_request"</li>
+                    <li><strong>lead_state.intent_provenance:</strong> Agregado con confidence 0.85</li>
+                    <li><strong>message_count:</strong> 0 → 1</li>
+                    <li><strong>last_guideline_used:</strong> Agregado</li>
+                </ul>
+            </div>
+        </section>
+
+        <section>
+            <h2>🤖 Respuesta Generada</h2>
+            <div class="message-box assistant">
+                <span class="turn-badge assistant">🤖 Asistente</span>
+                <p style="font-size: 1.1em; margin-top: 10px;"><strong>"¡Hola! Encantado de ayudarte. Ofrecemos soluciones de gestión empresarial que automatizan facturación, inventario y reportes. ¿Cuántos empleados tiene tu empresa?"</strong></p>
+            </div>
+
+            <h3>Construcción del Prompt</h3>
+            <div class="component-card">
+                <pre><code class="language-python"># PromptBuilder
+prompt = f"""
+Eres un agente de ventas consultivo especializado en software empresarial.
+
+DIRECTIVA PRINCIPAL:
+{guideline.directiva}
+
+CONTEXTO:
+- Intent capturado: info_request
+- Canal: whatsapp
+- Fase: prospection
+- Primera interacción con este prospecto
+
+RESPONDE de forma amigable y profesional. Pregunta sobre el tamaño de la empresa para calificar.
+"""</code></pre>
+            </div>
+        </section>
+
+        <section>
+            <h2>📈 Métricas del Turno</h2>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value">145ms</div>
+                    <div class="metric-label">Tiempo Total</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">87</div>
+                    <div class="metric-label">Candidatos Iniciales</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">5</div>
+                    <div class="metric-label">Post Matching Semántico</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">0.89</div>
+                    <div class="metric-label">Similarity Score</div>
+                </div>
+            </div>
+
+            <h3>Logs Estructurados</h3>
+            <div class="component-card">
+                <pre><code class="language-json">{
+  "timestamp": "2025-10-06T10:00:00.145Z",
+  "level": "INFO",
+  "component": "guideline_engine",
+  "action": "match",
+  "brand_id": "1",
+  "fase": "prospection",
+  "metodologia": null,
+  "canal": "whatsapp",
+  "candidates_initial": 87,
+  "candidates_after_deterministic": 23,
+  "candidates_after_semantic": 5,
+  "selected_guideline": "GL_PROSP_WELCOME_PRI60_V1",
+  "similarity_score": 0.89,
+  "duration_ms": 145,
+  "icp_actions_executed": 2,
+  "icp_fields_captured": ["lead_intent"]
+}</code></pre>
+            </div>
+        </section>
+
+        <section>
+            <h2>🎓 Conceptos Demostrados</h2>
+            <div class="component-card">
+                <h4>✅ En este turno aprendimos:</h4>
+                <ul>
+                    <li><strong>Matching Determinístico:</strong> Filtrado por brand_id, fase, canal</li>
+                    <li><strong>Matching Semántico:</strong> Embeddings + cosine similarity</li>
+                    <li><strong>Prioridad Efectiva:</strong> Ordenamiento por objetivo*1000 + local</li>
+                    <li><strong>ICP Actions:</strong> Extract → Validate → Sync pipeline</li>
+                    <li><strong>Provenance Tracking:</strong> Rastreo de fuente y confidence</li>
+                    <li><strong>Logging Estructurado:</strong> JSON con contexto completo</li>
+                </ul>
+            </div>
+        </section>
+
+        <div class="nav-buttons">
+            <a href="index.html" class="nav-button prev">Timeline</a>
+            <a href="turno-02-deteccion-metodologia.html" class="nav-button next">Siguiente Turno</a>
+        </div>
+
+    </div>
+
+    <footer>
+        <p><strong>Turno 1: Saludo Inicial - Ejemplo Conversacional</strong></p>
+        <p><a href="index.html">← Volver al timeline</a></p>
+    </footer>
+
+</body>
+</html>

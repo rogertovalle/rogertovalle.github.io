@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ejemplo Conversacional Completo - Prompt Governance</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="modal-styles.css">
+    <script src="embedded-content.js"></script>
+    <script src="branch-embedded-content.js"></script>
+    <script src="branch-manager.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({ startOnLoad: true, theme: 'default' });</script>
+    <script src="turn-config.js"></script>
+    <script src="content-loader.js"></script>
+    <script src="modal-controller.js"></script>
+</head>
+<body>
+    <header>
+        <h1>💬 Ejemplo Conversacional Completo</h1>
+        <div class="subtitle">Behind the Scenes: Conversación Paso a Paso</div>
+        <div class="breadcrumb"><a href="../index.html">← Volver al índice principal</a></div>
+    </header>
+
+    <div class="container">
+        
+        <section>
+            <h2>📖 Escenario de Negocio</h2>
+            
+            <div class="component-card">
+                <h4>Contexto</h4>
+                <ul>
+                    <li><strong>Usuario:</strong> Juan Pérez, dueño de PYME (30 empleados)</li>
+                    <li><strong>Producto:</strong> Software de gestión empresarial SaaS</li>
+                    <li><strong>Metodología:</strong> BANT (detectada automáticamente)</li>
+                    <li><strong>Canal:</strong> WhatsApp</li>
+                    <li><strong>Brand ID:</strong> 1</li>
+                    <li><strong>Objetivo Final:</strong> Calificar prospecto y presentar solución con ROI</li>
+                </ul>
+            </div>
+
+            <div class="info-box">
+            </div>
+        </section>
+
+        <section>
+            <h2>💬 Explorador de Conversaciones</h2>
+            <p>Explora diferentes escenarios y ve cómo el sistema se adapta en tiempo real:</p>
+            
+            <!-- Control de Ramas -->
+            <div class="branch-controls">
+                <div class="branch-info">
+                    <span class="current-path">📍 Ruta Principal</span>
+                    <div class="branch-actions">
+                        <button id="back-branch-btn" class="branch-action-btn" onclick="branchManager.goBack()">← Atrás</button>
+                        <button class="branch-action-btn" onclick="branchManager.resetToMain()">🏠 Inicio</button>
+                    </div>
+                </div>
+                <div class="context-chips" id="context-chips"></div>
+
+                <!-- Métricas Live de la Rama Actual -->
+                <div class="live-metrics">
+                    <div class="metric-item">
+                        <span class="metric-label">Conversión:</span>
+                        <span class="metric-value" id="conversion-rate">100%</span>
+                        <span class="metric-trend" id="conversion-trend">→</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Tiempo:</span>
+                        <span class="metric-value" id="time-duration">10.5min</span>
+                        <span class="metric-trend" id="time-trend">→</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Guidelines:</span>
+                        <span class="metric-value" id="guidelines-count">15</span>
+                        <span class="metric-trend" id="guidelines-trend">→</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Resultado:</span>
+                        <span class="metric-value" id="outcome-status">✅ Demo</span>
+                        <span class="metric-trend" id="outcome-trend">→</span>
+                    </div>
+                </div> <!-- end .live-metrics -->
+            </div> <!-- end .branch-controls -->
+
+            <!-- Panel lateral de Escenarios -->
+            <aside id="scenario-panel" class="scenario-panel" aria-hidden="true">
+                <div class="scenario-header">
+                    <h4>🎭 Escenarios</h4>
+                    <button class="branch-action-btn" onclick="branchManager.toggleScenarioPanel()">✖</button>
+                </div>
+                <div class="scenario-list">
+                    <button class="scenario-item" onclick="branchManager.applyScenario('low_budget')">💰 Presupuesto Insuficiente</button>
+                    <button class="scenario-item" onclick="branchManager.applyScenario('enterprise')">🏢 Empresa Muy Grande</button>
+                    <button class="scenario-item" onclick="branchManager.applyScenario('objection')">❌ Rechazo Directo</button>
+                    <button class="scenario-item" onclick="branchManager.applyScenario('loop')">🔄 Loop Detectado</button>
+                    <button class="scenario-item" onclick="branchManager.applyScenario('urgency')">⚡ Urgencia Alta</button>
+                    <button class="scenario-item" onclick="branchManager.applyScenario('language_en')">🌍 Idioma Diferente</button>
+                </div>
+            </aside>
+
+            <div class="conversation-wrapper">
+                <div class="conversation-chat" id="main-chat" data-role="primary">
+                <div class="chat-message user" data-turn="1">
+                    <div class="message-bubble" onclick="openTurnModal(1)">
+                        <div class="message-text">"Hola, quisiera información sobre sus soluciones"</div>
+                        <div class="message-meta">Haz clic para ver: Matching básico + Captura de intent</div>
+                    </div>
+                    <!-- No hay ramas alternativas para el saludo inicial -->
+                </div>
+
+                <!-- Turno 2 -->
+                <div class="chat-message assistant" data-turn="2">
+                    <div class="message-bubble" onclick="openTurnModal(2)">
+                        <div class="message-text">"¡Hola Juan! Encantado de ayudarte. ¿Cuántos empleados tiene tu empresa?"</div>
+                        <div class="message-meta">Haz clic para ver: Detección de metodología (BANT) + Pregunta de calificación</div>
+                    </div>
+                    
+                    <!-- Botones de Bifurcación (render dinámico) -->
+                    <div class="branch-buttons"></div>
+                </div>
+
+                <!-- Turno 3 -->
+                <div class="chat-message user" data-turn="3">
+                    <div class="message-bubble" onclick="openTurnModal(3)">
+                        <div class="message-text">"Somos 30 empleados. ¿Cuánto cuesta?"</div>
+                        <div class="message-meta">Haz clic para ver: ICP Actions + Condiciones JSONPath + Checkpoint</div>
+                    </div>
+                    
+                    <!-- Botones de Bifurcación (render dinámico) -->
+                    <div class="branch-buttons"></div>
+                </div>
+
+                <!-- Turno 4 -->
+                <div class="chat-message assistant" data-turn="4" onclick="openTurnModal(4)">
+                    <div class="message-bubble">
+                        <span class="message-badge checkpoint">⏸️ Checkpoint</span>
+                        <div class="message-text">"Para calcular el mejor precio, ¿cuál es tu presupuesto mensual aproximado?"</div>
+                        <div class="message-meta">Haz clic para ver: Checkpoint creado (falta dato)</div>
+                    </div>
+                </div>
+
+                <!-- Turno 5 -->
+                <div class="chat-message user" data-turn="5">
+                    <div class="message-bubble" onclick="openTurnModal(5)">
+                        <div class="message-text">"Tengo unos $15,000 mensuales disponibles"</div>
+                        <div class="message-meta">Haz clic para ver: Resume checkpoint + ICP validation</div>
+                    </div>
+                    
+                    <!-- Botones de Bifurcación (render dinámico) -->
+                    <div class="branch-buttons"></div>
+                </div>
+
+                <!-- Turno 6 -->
+                <div class="chat-message assistant" data-turn="6" onclick="openTurnModal(6)">
+                    <div class="message-bubble">
+                        <div class="message-text">"Perfecto. El plan para 30 usuarios es $12,000. Con tu volumen tienes 15% descuento: $10,200"</div>
+                        <div class="message-meta">Haz clic para ver: Calculations (inline + registry)</div>
+                    </div>
+                </div>
+
+                <!-- Turno 7 -->
+                <div class="chat-message user" data-turn="7" onclick="openTurnModal(7)">
+                    <div class="message-bubble">
+                        <div class="message-text">"¿Qué beneficios ofrece?"</div>
+                        <div class="message-meta">Haz clic para ver: Relación PRECEDES</div>
+                    </div>
+                    <!-- Botones de Bifurcación (render dinámico) -->
+                    <div class="branch-buttons"></div>
+                </div>
+
+                <!-- Turno 8 -->
+                <div class="chat-message assistant" data-turn="8" onclick="openTurnModal(8)">
+                    <div class="message-bubble">
+                        <div class="message-text">"Nuestro software te ayuda a: automatizar facturación, control de inventario, reportes en tiempo real..."</div>
+                        <div class="message-meta">Haz clic para ver: Brand override</div>
+                    </div>
+                </div>
+
+                <!-- Turno 9 -->
+                <div class="chat-message user" data-turn="9" onclick="openTurnModal(9)">
+                    <div class="message-bubble">
+                        <div class="message-text">"Hmm, me parece un poco caro..."</div>
+                        <div class="message-meta">Haz clic para ver: Matching semántico</div>
+                    </div>
+                </div>
+
+                <!-- Turno 10 -->
+                <div class="chat-message assistant" data-turn="10" onclick="openTurnModal(10)">
+                    <div class="message-bubble">
+                        <div class="message-text">"Te ahorrarás $2,500/mes en tiempo. Tu ROI es 82% en el primer año"</div>
+                        <div class="message-meta">Haz clic para ver: Cálculo ROI</div>
+                    </div>
+                </div>
+
+                <!-- Turno 11 -->
+                <div class="chat-message user" data-turn="11" onclick="openTurnModal(11)">
+                    <div class="message-bubble">
+                        <div class="message-text">"¿Esto entra en mi presupuesto que mencioné?"</div>
+                        <div class="message-meta">Haz clic para ver: State lookup</div>
+                    </div>
+                </div>
+
+                <!-- Turno 12 -->
+                <div class="chat-message assistant" data-turn="12" onclick="openTurnModal(12)">
+                    <div class="message-bubble">
+                        <div class="message-text">"Sí, con tu presupuesto de $15k/mes es viable. ¿Te gustaría una demo?"</div>
+                        <div class="message-meta">Haz clic para ver: Loop detection</div>
+                    </div>
+                </div>
+
+                <!-- Turno 13 -->
+                <div class="chat-message user" data-turn="13" onclick="openTurnModal(13)">
+                    <div class="message-bubble">
+                        <div class="message-text">"Sí, me gustaría agendar una demo"</div>
+                        <div class="message-meta">Haz clic para ver: Cierre exitoso ✅</div>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>📊 Resumen de Características Demostradas</h2>
+            <div class="mode-toggle" aria-label="Cambiar modo de explicación">
+                <button class="mode-chip active" data-mode="business" title="Explicación para negocio">Modo negocio</button>
+                <button class="mode-chip" data-mode="technical" title="Explicación para perfiles técnicos">Modo técnico</button>
+            </div>
+            
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value">13</div>
+                    <div class="metric-label">Turnos</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">20+</div>
+                    <div class="metric-label">Funciones</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">5</div>
+                    <div class="metric-label">Tipos de acciones</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">8</div>
+                    <div class="metric-label">Relaciones</div>
+                </div>
+            </div>
+
+            <h3>Qué hace el sistema</h3>
+            
+            <div id="summary-business">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
+                    <div class="component-card">
+                        <h4>🎯 Entiende lo que necesitas</h4>
+                        <ul>
+                            <li>✅ Reconoce en qué momento de la conversación estás.</li>
+                            <li>✅ Detecta el tipo de conversación para decidir el siguiente paso.</li>
+                            <li>✅ Usa palabras y contexto para entender la intención.</li>
+                            <li>✅ Da prioridad a lo más útil en cada momento.</li>
+                        </ul>
+                    </div>
+
+                    <div class="component-card">
+                        <h4>⚡ Acciones que hace por ti</h4>
+                        <ul>
+                            <li>✅ Busca datos que ya tiene para no preguntar de más.</li>
+                            <li>✅ Extrae y valida datos importantes (como email o presupuesto).</li>
+                            <li>✅ Hace cálculos sencillos para responder mejor (precio, ahorro, etc.).</li>
+                            <li>✅ Recuerda puntos clave y los retoma más adelante.</li>
+                            <li>✅ Consulta su memoria cuando hace falta.</li>
+                        </ul>
+                    </div>
+
+                    <div class="component-card">
+                        <h4>🔗 Orden lógico de la charla</h4>
+                        <ul>
+                            <li>✅ Sigue un orden claro y no salta pasos importantes.</li>
+                            <li>✅ Pide lo necesario antes de avanzar si falta información.</li>
+                            <li>✅ Conecta lo que quieres lograr con lo que se dice en la charla.</li>
+                            <li>✅ Evita repetir o mezclar temas.</li>
+                        </ul>
+                    </div>
+
+                    <div class="component-card">
+                        <h4>✨ Extras que mejoran la experiencia</h4>
+                        <ul>
+                            <li>✅ Se adapta a la marca y al canal (WhatsApp, email, etc.).</li>
+                            <li>✅ Elige la mejor forma de ayudar según la situación.</li>
+                            <li>✅ Evita bucles y redirige la charla cuando hace falta.</li>
+                            <li>✅ Tiene planes de respaldo cuando faltan datos.</li>
+                            <li>✅ Deja registro para aprender y mejorar.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div id="summary-technical" style="display:none;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
+                    <div class="component-card">
+                        <h4>🎯 Matching</h4>
+                        <ul>
+                            <li>✅ Determinístico (fase + metodología)</li>
+                            <li>✅ Semántico (embeddings)</li>
+                            <li>✅ Condiciones JSONPath</li>
+                            <li>✅ Prioridad efectiva</li>
+                        </ul>
+                    </div>
+
+                    <div class="component-card">
+                        <h4>⚡ Acciones</h4>
+                        <ul>
+                            <li>✅ Adapters (state_lookup)</li>
+                            <li>✅ ICP Actions (extract/validate)</li>
+                            <li>✅ Calculations (inline + registry)</li>
+                            <li>✅ Checkpoints (create + resume)</li>
+                            <li>✅ State Lookup explícito</li>
+                        </ul>
+                    </div>
+
+                    <div class="component-card">
+                        <h4>🔗 Relaciones</h4>
+                        <ul>
+                            <li>✅ PRECEDES (bloqueante)</li>
+                            <li>✅ DEPENDS_ON (recursos)</li>
+                            <li>✅ Propagación desde objetivos</li>
+                            <li>✅ Exclusiones mutuas</li>
+                        </ul>
+                    </div>
+
+                    <div class="component-card">
+                        <h4>🎨 Características Avanzadas</h4>
+                        <ul>
+                            <li>✅ Brand overrides</li>
+                            <li>✅ Auto-detección metodología</li>
+                            <li>✅ Loop detection</li>
+                            <li>✅ Fallback policies</li>
+                            <li>✅ Provenance tracking</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        
+
+        <section id="investor-brief">
+            <h2>🧭 Resumen para inversores, partners y aliados</h2>
+
+            <div class="component-card">
+                <h3>Análisis de mercado y pricing</h3>
+                <h4>Mercado objetivo</h4>
+                <ul>
+                    <li><span class="badge note">problema</span> Equipos comerciales con múltiples canales (WhatsApp, email, voz, webchat) que necesitan consistencia, cumplimiento y mejor conversión.</li>
+                </ul>
+                <h5>Verticales prioritarios</h5>
+                <ul>
+                    <li>SaaS B2B y fintech (procesos medibles, CRMs maduros).</li>
+                    <li>Telecom/ISPs y retail/ecommerce (alto volumen omnicanal).</li>
+                    <li>Seguros y banca (compliance y trazabilidad).</li>
+                    <li>BPO/contact centers e integradores CRM (revenden/operan a escala).</li>
+                </ul>
+                <h5>Tamaño de empresa</h5>
+                <ul>
+                    <li>SMB estructurado: 5–20 reps (rápida adopción, ticket bajo).</li>
+                    <li>Mid-market: 20–250 reps (mejor LTV, procesos claros).</li>
+                    <li>Enterprise: 250+ reps (multi-país, SLAs exigentes).</li>
+                </ul>
+            </div>
+
+            <div class="investor-grid">
+                <div class="component-card">
+                    <h4>ICPs (Ideal Customer Profiles)</h4>
+                    <h5>ICP-1: Mid-market SaaS/Fintech</h5>
+                    <ul>
+                        <li>20–150 reps, 5k–50k interacciones/mes, CRM (Salesforce/HubSpot/Dynamics).</li>
+                        <li>KPIs: conversión, tiempo de respuesta, consistencia por marca/canal.</li>
+                    </ul>
+                    <h5>ICP-2: Contact center/BPO</h5>
+                    <ul>
+                        <li>50–1,000+ agentes, WhatsApp y voz intensivos.</li>
+                        <li>KPIs: AHT, FCR, cumplimiento de guion, auditoría.</li>
+                    </ul>
+                    <h5>ICP-3: Seguros/Banca</h5>
+                    <ul>
+                        <li>Compliance fuerte (SOC2/ISO/DPA), plantillas y relaciones entre pasos.</li>
+                        <li>KPIs: riesgo, errores, trazabilidad, auditoría.</li>
+                    </ul>
+                </div>
+
+                <div class="component-card">
+                    <h4>Propuesta de valor por rol</h4>
+                    <ul>
+                        <li><strong>Sales/RevOps:</strong> Guiones consistentes, menos errores, ciclos más cortos, mejor conversión.</li>
+                        <li><strong>CX/Operaciones:</strong> Orquestación multicanal estable, control y observabilidad.</li>
+                        <li><strong>Compliance/Legal:</strong> Trazabilidad, políticas y relaciones (PRECEDES/DEPENDS_ON) aplicadas.</li>
+                        <li><strong>IT/Arquitectura:</strong> Integraciones claras con CRM/CCaaS, SSO/roles, logging estructurado.</li>
+                    </ul>
+                </div>
+
+                <div class="component-card">
+                    <h4>Modelo de precios recomendado</h4>
+                    <p><strong>Métrica principal:</strong> combinación de licencias por usuario y volumen de conversaciones.</p>
+                    <h5>Paquetes</h5>
+                    <ul>
+                        <li><strong>Starter (pequeños equipos):</strong> hasta 5 usuarios con licencia, 5,000 conversaciones al mes, 1 marca y 1 canal.</li>
+                        <li><strong>Growth (medianas empresas):</strong> 25–100 usuarios con licencia, 25,000–100,000 conversaciones al mes, 3 o más canales, personalización por marca.</li>
+                        <li><strong>Enterprise:</strong> límites definidos por contrato; inicio de sesión único (SSO) y aprovisionamiento (SCIM); acuerdos de nivel de servicio (SLA); auditorías avanzadas y política de retención de datos.</li>
+                    </ul>
+                    <h5>Complementos (opcionales)</h5>
+                    <ul>
+                        <li>Canales adicionales (WhatsApp Business a través de proveedor y voz).</li>
+                        <li>Cumplimiento y seguridad (acuerdos de procesamiento de datos —DPA—, auditorías y residencia de datos).</li>
+                        <li>Servicios profesionales (implementación, guías operativas y ajustes finos).</li>
+                    </ul>
+                </div>
+
+                <div class="component-card">
+                    <h4>Rango de precios sugeridos</h4>
+                    <p><span class="badge note">Nota</span> Rangos orientativos; ajustar con pilotos y sensibilidad al precio. Costos de WhatsApp/voz y del modelo de IA se trasladan o se prorratean según contrato.</p>
+                    <h5>Global (USD)</h5>
+                    <ul>
+                        <li>SMB: 299–699 USD/mes base (5 usuarios, 5,000 conversaciones), +29–49 USD por usuario adicional, +10–25 USD por cada 1,000 conversaciones extra.</li>
+                        <li>Mid‑market: 1,500–4,000 USD/mes base (25–100 usuarios, 25,000–100,000 conversaciones), +35–60 USD por usuario, +150–300 USD por cada 10,000 conversaciones.</li>
+                        <li>Enterprise: 6,000–20,000+ USD/mes; +45–85 USD por usuario; +500–1,500 USD por cada 50,000 conversaciones; incluye acuerdos de nivel de servicio y controles de seguridad.</li>
+                        <li>Servicios profesionales (implementación): 1,000–5,000 (SMB), 5,000–20,000 (Mid), 25,000–100,000 (Enterprise) según alcance.</li>
+                    </ul>
+                    <h5>LatAm (USD)</h5>
+                    <ul>
+                        <li>Ajuste de −35% a −55% respecto a precios globales.</li>
+                        <li>SMB: 149–399 USD/mes.</li>
+                        <li>Mid-market: 800–2,500 USD/mes.</li>
+                        <li>Enterprise: 3,500–12,000+ USD/mes.</li>
+                    </ul>
+                    <h5>Colombia (COP)</h5>
+                    <ul>
+                        <li>Referencia: 1 USD ≈ COP 4,0–4,2 mil (verificar tipo de cambio al cotizar).</li>
+                        <li>SMB: 600 mil–1.7 millones COP/mes.</li>
+                        <li>Mid‑market: 3.2–10.5 millones COP/mes.</li>
+                        <li>Enterprise: 14–50+ millones COP/mes.</li>
+                        <li>Servicios profesionales: 4–15 millones (Mid), 20–100+ millones (Enterprise) según integración y guías operativas.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="investor-grid">
+                <div class="component-card">
+                    <h4>Empaquetado por canal</h4>
+                    <ul>
+                        <li><strong>WhatsApp:</strong> el costo de WhatsApp Business (a través del proveedor) se traslada al cliente; se ofrece en bloques de conversaciones (10k/50k/100k).</li>
+                        <li><strong>Voz:</strong> integración con la plataforma de centro de contacto; opción de cobrar por llamada o por minuto.</li>
+                        <li><strong>Email/Webchat:</strong> incluido por paquete; límites por dominio/marca.</li>
+                    </ul>
+                </div>
+                <div class="component-card">
+                    <h4>Diferenciadores clave</h4>
+                    <ul>
+                        <li><strong>Governance real:</strong> PRECEDES/DEPENDS_ON, checkpoints, fallback policies.</li>
+                        <li><strong>Multicanal consciente:</strong> estado compartido y continuidad por canal.</li>
+                        <li><strong>Latencia optimizada:</strong> pre‑ejecución predictiva de próximos turnos.</li>
+                        <li><strong>Personalización por marca:</strong> comportamientos ajustables por marca y metodología sin romper las especificaciones globales.</li>
+                        <li><strong>Observabilidad:</strong> logs, métricas y trazabilidad para auditoría.</li>
+                    </ul>
+                </div>
+                <div class="component-card">
+                    <h4>Go-To-Market (plan comercial)</h4>
+                    <ul>
+                        <li><strong>Punto de entrada:</strong> priorizar WhatsApp en LatAm, empezando por retail y fintech.</li>
+                        <li><strong>Clientes aliados piloto:</strong> 3–5 cuentas en Colombia (mid‑market) con 15–50 usuarios.</li>
+                        <li><strong>Escalar progresivamente:</strong> comenzar en un canal o línea de producto y expandir luego.</li>
+                        <li><strong>Pruebas de precios:</strong> 2–3 paquetes por país; medir conversión y márgenes (usuario vs conversaciones).</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+
+    </div>
+
+<script>
+// Mode toggle: negocio vs técnico
+(function(){
+  function setMode(mode){
+    var chips = document.querySelectorAll('.mode-chip');
+    chips.forEach(function(ch){ ch.classList.toggle('active', ch.dataset.mode === mode); });
+    var biz = document.getElementById('summary-business');
+    var tech = document.getElementById('summary-technical');
+    if (biz && tech){
+      biz.style.display = (mode === 'business') ? 'block' : 'none';
+      tech.style.display = (mode === 'technical') ? 'block' : 'none';
+    }
+    // Update metric labels per mode
+    var labels = document.querySelectorAll('.metrics-grid .metric-card .metric-label');
+    var map = {
+      business: ['Turnos','Funciones','Tipos de acciones','Relaciones'],
+      technical: ['Turnos Conversacionales','Características del Sistema','Tipos de Acciones','Relaciones Evaluadas']
+    };
+    var arr = map[mode] || map.business;
+    labels.forEach(function(el, i){ if(arr[i]) el.textContent = arr[i]; });
+    try { localStorage.setItem('summaryMode', mode); } catch(e) {}
+  }
+  document.addEventListener('DOMContentLoaded', function(){
+    var saved = null; try { saved = localStorage.getItem('summaryMode'); } catch(e){}
+    setMode(saved === 'technical' ? 'technical' : 'business');
+    document.querySelectorAll('.mode-chip').forEach(function(ch){
+      ch.addEventListener('click', function(){ setMode(ch.dataset.mode); });
+    });
+  });
+})();
+</script>
+</body>
+</html>

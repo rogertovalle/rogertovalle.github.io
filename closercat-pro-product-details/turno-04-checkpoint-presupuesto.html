@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turno 4: Checkpoint Presupuesto - Ejemplo Conversacional</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({ startOnLoad: true, theme: 'default' });</script>
+</head>
+<body>
+    <header>
+        <h1>⏸️ Turno 4: Checkpoint Presupuesto</h1>
+        <div class="subtitle">Creación de Checkpoint por Input Faltante</div>
+        <div class="breadcrumb">
+            <a href="../index.html">← Índice principal</a> | 
+            <a href="index.html">← Timeline conversación</a>
+        </div>
+    </header>
+
+    <div class="container">
+        
+        <section>
+            <h2>📱 Mensaje del Usuario</h2>
+            <div class="message-box user">
+                <span class="turn-badge user">👤 Usuario - Juan Pérez</span>
+                <p style="font-size: 1.1em; margin-top: 10px;"><strong>"Somos 30 empleados. ¿Cuánto cuesta?"</strong></p>
+            </div>
+        </section>
+
+        <section>
+            <h2>📊 Estado del Sistema ANTES</h2>
+            <div class="state-box before">
+                <div class="json-viewer">
+<pre>{
+  "current_phase": "qualification",
+  "metodologia": "BANT",  // Ya detectado
+  "user_identity": {
+    "known_user": true,
+    "name": "Juan Pérez"
+  },
+  "icp_state": {
+    "company_size": null,
+    "industry": null
+  },
+  "bant_state": {
+    "budget": null,  // <-- FALTA ESTE DATO
+    "authority": null,
+    "need": "info_request",
+    "timeline": null
+  },
+  "checkpoint_stack": []
+}</pre>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>⚙️ Procesamiento con Checkpoint</h2>
+
+            <div class="mermaid">
+sequenceDiagram
+    participant U as Usuario
+    participant GE as GuidelineEngine
+    participant CE as CalculationExecutor
+    participant CM as CheckpointManager
+    participant SS as SalesState
+
+    U->>GE: "¿Cuánto cuesta?"
+    GE->>GE: Match guideline:<br/>GL_PRES_CALC_DISCOUNT_PRI75_V1
+    
+    Note over GE: Guideline requiere calcular descuento
+    
+    GE->>CE: execute_for_guideline()
+    
+    rect rgb(255, 240, 220)
+        Note over CE: CÁLCULO REQUERIDO
+        CE->>CE: Calculation: calculate_volume_discount
+        CE->>CE: Inputs needed:<br/>- company_size ✅<br/>- budget ❌ FALTA
+    end
+    
+    rect rgb(255, 220, 220)
+        Note over CE,CM: INPUT FALTANTE DETECTADO
+        CE->>CE: on_missing_input policy: ask_user
+        CE->>CM: create_checkpoint(missing: ["budget"])
+        
+        CM->>CM: Validar no hay loop
+        CM->>CM: Depth check: 0 < 10 ✅
+        CM->>SS: Push checkpoint to stack
+        
+        CM-->>CE: Checkpoint creado (ID: ckpt_001)
+    end
+    
+    CE-->>GE: status: checkpoint_required
+    
+    GE->>GE: Seleccionar fallback guideline:<br/>GL_QUAL_BUDGET_ASK_PRI70_V1
+    
+    GE-->>U: "Para calcular el mejor precio,<br/>¿cuál es tu presupuesto aproximado?"
+            </div>
+
+            <h3>Guideline Original Seleccionado</h3>
+            <div class="component-card">
+                <h4>GL_PRES_CALC_DISCOUNT_PRI75_V1</h4>
+                <div class="json-viewer">
+<pre>{
+  "id": "GL_PRES_CALC_DISCOUNT_PRI75_V1",
+  "descripcion": "Calcular descuento por volumen y presentar precio",
+  "accion": {
+    "calculations": [
+      {
+        "action": "calculate_volume_discount",
+        "function": "pricing.calculate_volume_discount",
+        "inputs": {
+          "company_size": {
+            "path": "icp_state.company_size",
+            "type": "int",
+            "required": true
+          },
+          "budget": {
+            "path": "bant_state.budget",
+            "type": "float",
+            "required": true  // <-- ESTE FALTA
+          }
+        },
+        "output": "solution_offer.discount_percentage",
+        "on_missing_input": {
+          "strategy": "ask_user",
+          "fallback_guideline": "GL_QUAL_BUDGET_ASK_PRI70_V1",
+          "create_checkpoint": true,
+          "max_retries": 2
+        }
+      }
+    ]
+  }
+}</pre>
+                </div>
+            </div>
+
+            <h3>Detección de Input Faltante</h3>
+            <div class="component-card">
+                <pre><code class="language-python"># CalculationExecutor.execute_for_guideline()
+
+# Recolectar inputs
+missing = []
+collected_inputs = {}
+
+for input_name, input_config in calc.get("inputs", {}).items():
+    path = input_config.get("path")
+    value = get_path(sales_state, path)
+    
+    if value is None and input_config.get("required"):
+        missing.append(path)
+    else:
+        collected_inputs[input_name] = value
+
+# Resultado:
+# missing = ["bant_state.budget"]
+# collected_inputs = {"company_size": 30}
+
+if missing:
+    policy = calc.get("on_missing_input", {})
+    if policy.get("strategy") == "ask_user":
+        # Crear checkpoint
+        checkpoint_manager.create_checkpoint(
+            guideline_id=guideline.id,
+            pending_action="calculate_volume_discount",
+            missing_inputs=missing,
+            collected_inputs=collected_inputs
+        )</code></pre>
+            </div>
+
+            <h3>Creación del Checkpoint</h3>
+            <div class="checkpoint-indicator">
+                <h4>⏸️ Checkpoint Creado: ckpt_001</h4>
+                <div class="json-viewer">
+<pre>{
+  "checkpoint_id": "ckpt_001",
+  "guideline_id": "GL_PRES_CALC_DISCOUNT_PRI75_V1",
+  "pending_action": "calculate_volume_discount",
+  "action_type": "calculation",
+  "missing_inputs": ["bant_state.budget"],
+  "collected_inputs": {
+    "company_size": 30
+  },
+  "retry_count": 0,
+  "depth": 0,
+  "created_at": "2025-10-06T10:03:00Z",
+  "fallback_guideline": "GL_QUAL_BUDGET_ASK_PRI70_V1"
+}</pre>
+                </div>
+            </div>
+
+            <h3>Protecciones Aplicadas</h3>
+            <div class="component-card">
+                <pre><code class="language-python"># CheckpointManager.create_checkpoint()
+
+# 1. Verificar loop detection
+if self.detect_loop(guideline_id, checkpoint_stack):
+    raise LoopDetectionError("Max depth reached")
+
+# 2. Verificar profundidad máxima
+current_depth = len(checkpoint_stack)
+if current_depth >= CHECKPOINT_MAX_DEPTH:  # default: 10
+    raise MaxDepthError("Checkpoint stack full")
+
+# 3. Verificar retries globales
+total_retries = sum(cp["retry_count"] for cp in checkpoint_stack)
+if total_retries >= MAX_GLOBAL_RETRIES:  # default: 3
+    raise MaxRetriesError("Too many retries")
+
+# 4. Log observabilidad
+logger.info(
+    "checkpoint_created",
+    checkpoint_id="ckpt_001",
+    guideline_id=guideline_id,
+    missing_inputs=missing_inputs,
+    depth=current_depth
+)
+
+# 5. Push al stack
+sales_state["checkpoint_stack"].append(checkpoint)</code></pre>
+            </div>
+
+            <h3>Selección de Fallback Guideline</h3>
+            <div class="component-card">
+                <h4>GL_QUAL_BUDGET_ASK_PRI70_V1 (Fallback)</h4>
+                <pre><code class="language-yaml">id: GL_QUAL_BUDGET_ASK_PRI70_V1
+descripcion: "Preguntar presupuesto disponible de forma directa"
+directiva: |
+  Pregunta de forma directa pero profesional sobre el presupuesto.
+  Contextualiza por qué necesitas esta información.
+  
+accion:
+  icp_actions:
+    - action: capture_field
+      field: budget
+      extractor: spacy_currency
+      normalizer: [trim]
+      validator:
+        type: gte
+        value: 1000
+        error_message: "El presupuesto debe ser al menos $1,000"
+      sync_to: bant_state.budget</code></pre>
+            </div>
+        </section>
+
+        <section>
+            <h2>📊 Estado del Sistema DESPUÉS</h2>
+            
+            <div class="state-comparison">
+                <div class="state-box before">
+                    <h4>❌ Antes</h4>
+                    <div class="json-viewer">
+<pre>{
+  "checkpoint_stack": [],
+  "bant_state": {
+    "budget": null
+  },
+  "pending_calculations": []
+}</pre>
+                    </div>
+                </div>
+
+                <div class="state-box after">
+                    <h4>✅ Después</h4>
+                    <div class="json-viewer">
+<pre>{
+  "checkpoint_stack": <span class="highlight-change">[
+    {
+      "checkpoint_id": "ckpt_001",
+      "guideline_id": "GL_PRES_CALC_DISCOUNT_PRI75_V1",
+      "pending_action": "calculate_volume_discount",
+      "missing_inputs": ["bant_state.budget"],
+      "collected_inputs": {"company_size": 30},
+      "depth": 0
+    }
+  ]</span>,
+  "bant_state": {
+    "budget": null  // Aún null
+  },
+  "pending_calculations": <span class="highlight-change">[
+    "calculate_volume_discount"
+  ]</span>
+}</pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="state-diff">
+                <h4>🔄 Cambios Detectados</h4>
+                <ul>
+                    <li><strong>checkpoint_stack:</strong> [] → [checkpoint con depth=0]</li>
+                    <li><strong>pending_calculations:</strong> Agregado "calculate_volume_discount"</li>
+                    <li><strong>last_checkpoint_created:</strong> "ckpt_001"</li>
+                    <li><strong>waiting_for_input:</strong> "bant_state.budget"</li>
+                </ul>
+            </div>
+        </section>
+
+        <section>
+            <h2>🤖 Respuesta Generada</h2>
+            <div class="message-box assistant">
+                <span class="turn-badge assistant">🤖 Asistente</span>
+                <span class="checkpoint-indicator" style="display: inline-block; padding: 4px 8px; font-size: 0.8em;">⏸️ Esperando dato</span>
+                <p style="font-size: 1.1em; margin-top: 10px;"><strong>"Para calcular el mejor precio con descuento según tu empresa, ¿cuál es tu presupuesto mensual aproximado para este tipo de solución?"</strong></p>
+            </div>
+
+            <div class="info-box">
+                <strong>Nota:</strong> El sistema NO ejecutó el cálculo de descuento. En su lugar, creó un checkpoint y cambió a un guideline de fallback que pide el dato faltante. Una vez que el usuario proporcione el presupuesto, el sistema reanudará automáticamente desde el checkpoint.
+            </div>
+        </section>
+
+        <section>
+            <h2>📈 Métricas del Turno</h2>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value">1</div>
+                    <div class="metric-label">Checkpoints Creados</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">0</div>
+                    <div class="metric-label">Depth Actual</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">1</div>
+                    <div class="metric-label">Inputs Faltantes</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">1</div>
+                    <div class="metric-label">Inputs Colectados</div>
+                </div>
+            </div>
+
+            <h3>Logs Estructurados</h3>
+            <div class="component-card">
+                <pre><code class="language-json">{
+  "timestamp": "2025-10-06T10:03:00.089Z",
+  "level": "INFO",
+  "component": "calculation_executor",
+  "action": "checkpoint_required",
+  "guideline_id": "GL_PRES_CALC_DISCOUNT_PRI75_V1",
+  "calculation": "calculate_volume_discount",
+  "missing_inputs": ["bant_state.budget"],
+  "collected_inputs": {"company_size": 30},
+  "policy": "ask_user",
+  "fallback_guideline": "GL_QUAL_BUDGET_ASK_PRI70_V1",
+  "checkpoint_id": "ckpt_001",
+  "depth": 0
+}</code></pre>
+            </div>
+        </section>
+
+        <section>
+            <h2>🎓 Conceptos Demostrados</h2>
+            <div class="component-card">
+                <h4>✅ En este turno aprendimos:</h4>
+                <ul>
+                    <li><strong>Checkpoint Creation:</strong> Sistema pausable cuando falta input</li>
+                    <li><strong>on_missing_input Policy:</strong> Estrategia "ask_user" aplicada</li>
+                    <li><strong>Fallback Guideline:</strong> Cambio automático a guideline alternativo</li>
+                    <li><strong>Collected Inputs:</strong> Datos ya capturados se guardan</li>
+                    <li><strong>Loop Detection:</strong> Verificación de depth antes de crear checkpoint</li>
+                    <li><strong>Stack Management:</strong> Push al checkpoint_stack del SalesState</li>
+                    <li><strong>Observabilidad:</strong> Log estructurado con todos los detalles</li>
+                </ul>
+            </div>
+
+            <div class="warning-box">
+                <h4>💡 ¿Por qué es importante?</h4>
+                <p>Los checkpoints permiten que el sistema maneje workflows asíncronos sin perder contexto. El usuario puede responder en cualquier momento y el sistema reanudará exactamente donde se quedó.</p>
+            </div>
+        </section>
+
+        <div class="nav-buttons">
+            <a href="turno-03-pregunta-precio.html" class="nav-button prev">Turno Anterior</a>
+            <a href="turno-05-captura-presupuesto.html" class="nav-button next">Siguiente: Resume Checkpoint</a>
+        </div>
+
+    </div>
+
+    <footer>
+        <p><strong>Turno 4: Checkpoint Presupuesto - Ejemplo Conversacional</strong></p>
+        <p><a href="index.html">← Volver al timeline</a></p>
+    </footer>
+
+</body>
+</html>

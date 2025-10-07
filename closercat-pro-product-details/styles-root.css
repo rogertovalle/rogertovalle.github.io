@@ -1,0 +1,338 @@
+/* Copia local para hacer autosuficiente la demo */
+/* Fuente: ../styles.css (nivel superior) */
+/* ==================== PROMPT GOVERNANCE DOCUMENTATION STYLES ==================== */
+/* Shared styles for all documentation pages */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body { 
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; 
+    line-height: 1.7; 
+    color: #1a202c; 
+    background: #f7fafc; 
+}
+
+.container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+
+/* ==================== HEADER ==================== */
+header { 
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+    color: white; 
+    padding: 50px 30px; 
+    text-align: center; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
+    margin-bottom: 30px; 
+}
+
+header h1 { 
+    font-size: 2.5em; 
+    margin-bottom: 10px; 
+    text-shadow: 2px 2px 6px rgba(0,0,0,0.3); 
+    font-weight: 700;
+}
+
+header .subtitle { 
+    font-size: 1.2em; 
+    opacity: 0.95; 
+    margin-bottom: 15px; 
+}
+
+header .breadcrumb {
+    font-size: 0.9em;
+    opacity: 0.85;
+    margin-top: 15px;
+}
+
+header .breadcrumb a {
+    color: white;
+    text-decoration: underline;
+}
+
+/* ==================== NAVIGATION ==================== */
+nav { 
+    background: white; 
+    padding: 25px; 
+    border-radius: 12px; 
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
+    margin-bottom: 30px; 
+}
+
+nav h3 { 
+    color: #667eea; 
+    margin-bottom: 15px; 
+    font-size: 1.2em; 
+    border-bottom: 2px solid #667eea; 
+    padding-bottom: 8px; 
+}
+
+nav ul { 
+    list-style: none; 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+    gap: 10px; 
+}
+
+nav li { margin: 0; }
+
+nav a { 
+    color: #4a5568; 
+    text-decoration: none; 
+    padding: 10px 14px; 
+    display: block; 
+    border-radius: 8px; 
+    transition: all 0.3s ease; 
+    border-left: 4px solid transparent;
+}
+
+nav a:hover { 
+    background: #edf2f7; 
+    border-left-color: #667eea; 
+    transform: translateX(5px); 
+    color: #667eea;
+}
+
+nav a.active {
+    background: #edf2f7;
+    border-left-color: #764ba2;
+    font-weight: 600;
+}
+
+/* ==================== SECTIONS ==================== */
+section { 
+    background: white; 
+    padding: 35px; 
+    margin-bottom: 35px; 
+    border-radius: 12px; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.06); 
+}
+
+h2 { 
+    color: #667eea; 
+    font-size: 2.2em; 
+    margin-bottom: 20px; 
+    padding-bottom: 12px; 
+    border-bottom: 4px solid #667eea; 
+    font-weight: 700;
+}
+
+h3 { 
+    color: #764ba2; 
+    font-size: 1.6em; 
+    margin-top: 30px; 
+    margin-bottom: 15px; 
+    font-weight: 600;
+}
+
+h4 { 
+    color: #2d3748; 
+    font-size: 1.25em; 
+    margin-top: 20px; 
+    margin-bottom: 12px; 
+    font-weight: 600;
+}
+
+/* ==================== BADGES ==================== */
+.badge { 
+    display: inline-block; 
+    padding: 5px 12px; 
+    border-radius: 16px; 
+    font-size: 0.85em; 
+    font-weight: 600; 
+    margin: 4px 4px 4px 0; 
+}
+
+.badge-success { background: #48bb78; color: white; }
+.badge-info { background: #4299e1; color: white; }
+.badge-warning { background: #ed8936; color: white; }
+.badge-phase { background: #9f7aea; color: white; }
+.badge-critical { background: #f56565; color: white; }
+.badge-primary { background: #667eea; color: white; }
+
+/* ==================== CODE ==================== */
+code { 
+    background: #edf2f7; 
+    padding: 3px 7px; 
+    border-radius: 4px; 
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace; 
+    font-size: 0.9em; 
+    color: #c53030; 
+}
+
+pre { 
+    background: #1a202c; 
+    color: #e2e8f0; 
+    padding: 20px; 
+    border-radius: 8px; 
+    overflow-x: auto; 
+    margin: 18px 0; 
+    font-size: 0.88em; 
+    line-height: 1.6;
+}
+
+pre code { 
+    background: none; 
+    color: inherit; 
+    padding: 0; 
+}
+
+/* ==================== TABLES ==================== */
+table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    margin: 20px 0; 
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+th, td { 
+    padding: 12px; 
+    text-align: left; 
+    border-bottom: 1px solid #e2e8f0; 
+}
+
+th { 
+    background: #f7fafc; 
+    font-weight: 700; 
+    color: #2d3748; 
+    text-transform: uppercase;
+    font-size: 0.82em;
+    letter-spacing: 0.5px;
+}
+
+tr:hover { background: #f7fafc; }
+
+/* ==================== INFO BOXES ==================== */
+.info-box { 
+    background: #bee3f8; 
+    border-left: 5px solid #4299e1; 
+    padding: 18px; 
+    margin: 18px 0; 
+    border-radius: 6px; 
+}
+
+.success-box { 
+    background: #c6f6d5; 
+    border-left: 5px solid #48bb78; 
+    padding: 18px; 
+    margin: 18px 0; 
+    border-radius: 6px; 
+}
+
+.warning-box { 
+    background: #feebc8; 
+    border-left: 5px solid #ed8936; 
+    padding: 18px; 
+    margin: 18px 0; 
+    border-radius: 6px; 
+}
+
+.critical-box { 
+    background: #fed7d7; 
+    border-left: 5px solid #f56565; 
+    padding: 18px; 
+    margin: 18px 0; 
+    border-radius: 6px; 
+}
+
+/* ==================== COMPONENT CARDS ==================== */
+.component-card { 
+    background: #f7fafc; 
+    border: 2px solid #e2e8f0; 
+    border-radius: 10px; 
+    padding: 22px; 
+    margin: 18px 0; 
+    transition: all 0.3s ease;
+}
+
+.component-card:hover { 
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1); 
+    transform: translateY(-2px);
+}
+
+.component-card h4 {
+    margin-top: 0;
+}
+
+/* ==================== LISTS ==================== */
+ul, ol { margin: 18px 0 18px 28px; }
+li { margin: 8px 0; }
+
+/* ==================== MERMAID DIAGRAMS ==================== */
+.mermaid { 
+    background: #f7fafc; 
+    padding: 25px; 
+    border-radius: 10px; 
+    margin: 25px 0; 
+    border: 2px solid #e2e8f0;
+}
+
+/* ==================== NAVIGATION BUTTONS ==================== */
+.nav-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 2px solid #e2e8f0;
+}
+
+.nav-button {
+    display: inline-block;
+    padding: 12px 24px;
+    background: #667eea;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.nav-button:hover {
+    background: #764ba2;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.nav-button.prev::before {
+    content: "← ";
+}
+
+.nav-button.next::after {
+    content: " →";
+}
+
+/* ==================== FOOTER ==================== */
+footer {
+    background: #2d3748;
+    color: #e2e8f0;
+    padding: 30px;
+    text-align: center;
+    margin-top: 50px;
+    border-radius: 12px;
+}
+
+footer a {
+    color: #90cdf4;
+    text-decoration: none;
+}
+
+footer a:hover {
+    text-decoration: underline;
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 768px) {
+    header h1 { font-size: 1.8em; }
+    h2 { font-size: 1.6em; }
+    h3 { font-size: 1.3em; }
+    nav ul { grid-template-columns: 1fr; }
+    .nav-buttons { flex-direction: column; gap: 15px; }
+    .container { padding: 15px; }
+    section { padding: 25px; }
+}
+
+/* ==================== UTILITIES ==================== */
+.text-center { text-align: center; }
+.mt-1 { margin-top: 10px; }
+.mt-2 { margin-top: 20px; }
+.mb-1 { margin-bottom: 10px; }
+.mb-2 { margin-bottom: 20px; }
+.highlight { background: #fef5e7; padding: 2px 6px; border-radius: 3px; }
